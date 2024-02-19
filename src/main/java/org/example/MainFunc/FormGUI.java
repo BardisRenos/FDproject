@@ -147,15 +147,19 @@ public class FormGUI extends GUI {
                         JOptionPane.showMessageDialog(null, "The Directory already exists");
                         FormGUI.this.OnomaArxieou.setText("");
                     } else if (!FormGUI.onomaArxikouDR.equalsIgnoreCase("MFD_DR.txt") && !FormGUI.onomaArxikouPRD.equalsIgnoreCase("MFD_PRD.txt")) {
-                        FormGUI.this.savetofile(FormGUI.onomaArxikouDR, FormGUI.onomaArxikouPRD, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
-                        FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                        FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                        FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                        JOptionPane.showMessageDialog(null, "The comparison finished successfully");
-                        FormGUI.this.OnomaDr.setText("");
-                        FormGUI.this.OnomaPRD.setText("");
-                        FormGUI.this.OnomaEksagogis.setText("");
-                        FormGUI.this.OnomaArxieou.setText("");
+                        boolean isFolderEmpty = FormGUI.this.savetofile(FormGUI.onomaArxikouDR, FormGUI.onomaArxikouPRD, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
+                        if (isFolderEmpty) {
+                            JOptionPane.showMessageDialog(null, "There is no different no need to create files");
+                        } else {
+                            FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                            FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                            FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                            JOptionPane.showMessageDialog(null, "The comparison finished successfully");
+                            FormGUI.this.OnomaDr.setText("");
+                            FormGUI.this.OnomaPRD.setText("");
+                            FormGUI.this.OnomaEksagogis.setText("");
+                            FormGUI.this.OnomaArxieou.setText("");
+                        }
                     } else {
                         JOptionPane.showMessageDialog(null, "Files are not compatible. Please choose a MFD_DR or MFD_PRD files");
                         FormGUI.this.OnomaDr.setText("");
@@ -505,7 +509,7 @@ public class FormGUI extends GUI {
         }
     }
 
-    public int savetofile(String onomaDR, String onomaPRD, String name, String destination) throws IOException {
+    public boolean savetofile(String onomaDR, String onomaPRD, String name, String destination) throws IOException {
         ArrayList<String> lista1 = new ArrayList();
         ArrayList<String> lista2 = new ArrayList();
         ArrayList<String> lista3 = new ArrayList();
@@ -538,7 +542,6 @@ public class FormGUI extends GUI {
 
         BufferedReader brDR = getBufferedReader(onomaDR);
         BufferedReader brPrd = getBufferedReader(onomaPRD);
-
 
         while(true) {
             while((line = brDR.readLine()) != null) {
@@ -1079,7 +1082,7 @@ public class FormGUI extends GUI {
                         }
                     }
                 }
-                return 1;
+                return isEmpty(Path.of(destination));
             }
         }
     }
@@ -1088,6 +1091,10 @@ public class FormGUI extends GUI {
         File file = new File(filePath.trim());
         FileReader fileReader = new FileReader(file);
         return new BufferedReader(fileReader);
+    }
+
+    public boolean isEmpty(Path path) {
+        return path.toFile().listFiles().length == 0;
     }
 
     public static void main(String[] args) {

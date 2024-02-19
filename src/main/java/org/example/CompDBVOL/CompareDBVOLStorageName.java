@@ -105,7 +105,7 @@ public class CompareDBVOLStorageName extends GUICompareDBVOL {
         int j;
         for(i = 0; i < lista1.size(); ++i) {
             for(j = 0; j < lista2.size(); ++j) {
-                if (((String)lista1.get(i)).equals(lista2.get(j))) {
+                if ((lista1.get(i)).equals(lista2.get(j))) {
                     lista2.remove(j);
                     ++counter;
                 }
@@ -119,7 +119,7 @@ public class CompareDBVOLStorageName extends GUICompareDBVOL {
 
         for(i = 0; i < lista1.size(); ++i) {
             for(j = 0; j < lista3.size(); ++j) {
-                if (((String)lista1.get(i)).equals(lista3.get(j))) {
+                if ((lista1.get(i)).equals(lista3.get(j))) {
                     lista3.remove(j);
                     ++counter2;
                 }
@@ -133,7 +133,7 @@ public class CompareDBVOLStorageName extends GUICompareDBVOL {
 
         for(i = 0; i < lista1.size(); ++i) {
             for(j = 0; j < lista4.size(); ++j) {
-                if (((String)lista1.get(i)).equals(lista4.get(j))) {
+                if ((lista1.get(i)).equals(lista4.get(j))) {
                     lista4.remove(j);
                     ++counter3;
                 }
@@ -177,7 +177,7 @@ public class CompareDBVOLStorageName extends GUICompareDBVOL {
             Object columnString = var31.next();
             Row row = sheet.createRow(rowCount);
             Cell cell = row.createCell(0);
-            sheet.autoSizeColumn(((String)columnString).length());
+            sheet.autoSizeColumn(columnString.toString().length());
             cell.setCellValue(columnString.toString());
         }
 
@@ -242,7 +242,7 @@ public class CompareDBVOLStorageName extends GUICompareDBVOL {
             Object columnString = var31.next();
             Row row = sheet.createRow(rowCount);
             Cell cell = row.createCell(0);
-            sheet.autoSizeColumn(((String)columnString).length());
+            sheet.autoSizeColumn(columnString.toString().length());
             cell.setCellValue(columnString.toString());
         }
 
@@ -308,7 +308,7 @@ public class CompareDBVOLStorageName extends GUICompareDBVOL {
             Object columnString = var29.next();
             Row row = sheet.createRow(rowCount);
             cell = row.createCell(0);
-            sheet.autoSizeColumn(((String)columnString).length());
+            sheet.autoSizeColumn(columnString.toString().length());
             cell.setCellValue(columnString.toString());
         }
 

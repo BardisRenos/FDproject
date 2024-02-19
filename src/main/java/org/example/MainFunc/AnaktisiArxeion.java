@@ -153,10 +153,10 @@ public class AnaktisiArxeion extends DiskGUI {
 
         for(int i = 0; i < Pinakas.length; ++i) {
             int pinakasStili = 0;
-            Pinakas[i][pinakasStili] = (String)stili1.get(i);
+            Pinakas[i][pinakasStili] = stili1.get(i);
             String[] var10000 = Pinakas[i];
             ++pinakasStili;
-            var10000[pinakasStili] = (String)stili2.get(i);
+            var10000[pinakasStili] = stili2.get(i);
         }
 
         HSSFWorkbook workbook = new HSSFWorkbook();

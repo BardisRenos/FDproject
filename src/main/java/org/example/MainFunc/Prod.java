@@ -560,12 +560,12 @@ public class Prod extends JFrame {
                                 continue label308;
                             }
 
-                            lista1String = (String)lista1.get(i);
-                            lista2String = (String)lista2.get(i);
-                            lista3String = (String)lista3.get(i);
-                            lista11String = (String)lista11.get(j);
-                            lista12String = (String)lista12.get(j);
-                            lista13String = (String)lista13.get(j);
+                            lista1String = lista1.get(i);
+                            lista2String = lista2.get(i);
+                            lista3String = lista3.get(i);
+                            lista11String = lista11.get(j);
+                            lista12String = lista12.get(j);
+                            lista13String = lista13.get(j);
                             int IntegerDR;
                             int IntegetPRD;
                             int IntegerDRPRD;
@@ -575,16 +575,16 @@ public class Prod extends JFrame {
 //                            int akeraiosDR;
 //                            int akeraiosPRD;
 
-                            if (((String)lista1.get(i)).startsWith("$") && ((String)lista11.get(j)).startsWith("$")) {
-                                if (((String)lista1.get(i)).equals(lista11.get(j)) && ((String)lista2.get(i)).equals(lista12.get(j)) && ((String)lista3.get(i)).equals(lista13.get(j))) {
-                                    if (((String)lista6.get(i)).equals(lista16.get(j))) {
+                            if ((lista1.get(i)).startsWith("$") && (lista11.get(j)).startsWith("$")) {
+                                if ((lista1.get(i)).equals(lista11.get(j)) && (lista2.get(i)).equals(lista12.get(j)) && (lista3.get(i)).equals(lista13.get(j))) {
+                                    if ((lista6.get(i)).equals(lista16.get(j))) {
                                         ++count;
                                         movesecondarray = j + 1;
                                     } else {
-                                        IntegerDR = Integer.parseInt((String)lista6.get(i));
-                                        IntegetPRD = Integer.parseInt((String)lista16.get(j));
+                                        IntegerDR = Integer.parseInt(lista6.get(i));
+                                        IntegetPRD = Integer.parseInt(lista16.get(j));
                                         IntegerDRPRD = IntegerDR - IntegetPRD;
-                                        System.out.println("ta stoixeia einai :" + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + IntegerDRPRD);
+                                        System.out.println("ta stoixeia einai :" + lista1.get(i) + " " + lista2.get(i) + " " + lista3.get(i) + " " + lista11.get(j) + " " + lista12.get(j) + " " + lista13.get(j) + " " + IntegerDRPRD);
                                         ++vrikeSizegiaArxeio;
                                         arxeioeggrafisSize = new File(destination + "/" + "Compare_PROD-" + name + "Size" + ".txt");
                                         fwSize = null;
@@ -610,9 +610,9 @@ public class Prod extends JFrame {
                                     continue label308;
                                 }
 
-                                if (!((String)lista1.get(i)).equals(lista11.get(j)) || !((String)lista2.get(i)).equals(lista12.get(j))) {
-                                    akeraiosDR = Integer.parseInt((String)lista3.get(i));
-                                    akeraiosPRD = Integer.parseInt((String)lista13.get(j));
+                                if (!(lista1.get(i)).equals(lista11.get(j)) || !(lista2.get(i)).equals(lista12.get(j))) {
+                                    akeraiosDR = Integer.parseInt(lista3.get(i));
+                                    akeraiosPRD = Integer.parseInt(lista13.get(j));
                                     if (akeraiosDR > akeraiosPRD) {
                                         continue label308;
                                     }
@@ -621,32 +621,32 @@ public class Prod extends JFrame {
                                     continue;
                                 }
 
-                                if (Character.isLetter(((String)lista2.get(i)).charAt(0)) && Character.isLetter(((String)lista12.get(j)).charAt(0)) && ((String)lista12.get(j)).equals("PFM")) {
+                                if (Character.isLetter((lista2.get(i)).charAt(0)) && Character.isLetter((lista12.get(j)).charAt(0)) && (lista12.get(j)).equals("PFM")) {
                                     continue label308;
                                 }
                             }
 
-                            if (((String)lista1.get(i)).startsWith("$") && Character.isDigit(((String)lista11.get(j)).charAt(0))) {
+                            if ((lista1.get(i)).startsWith("$") && Character.isDigit((lista11.get(j)).charAt(0))) {
                                 continue label308;
                             }
 
-                            if (Character.isDigit(((String)lista1.get(i)).charAt(0)) && ((String)lista11.get(j)).startsWith("$")) {
+                            if (Character.isDigit((lista1.get(i)).charAt(0)) && (lista11.get(j)).startsWith("$")) {
                                 ++j;
                             } else {
-                                if (Character.isDigit(((String)lista1.get(i)).charAt(0)) && Character.isLetter(((String)lista11.get(j)).charAt(0))) {
+                                if (Character.isDigit((lista1.get(i)).charAt(0)) && Character.isLetter((lista11.get(j)).charAt(0))) {
                                     continue label308;
                                 }
 
-                                if (Character.isDigit(((String)lista1.get(i)).charAt(0)) && Character.isDigit(((String)lista11.get(j)).charAt(0))) {
-                                    if (((String)lista1.get(i)).equals(lista11.get(j)) && ((String)lista2.get(i)).equals(lista12.get(j))) {
-                                        if (((String)lista3.get(i)).equals(lista13.get(j))) {
-                                            if (((String)lista6.get(i)).equals(lista16.get(j))) {
+                                if (Character.isDigit((lista1.get(i)).charAt(0)) && Character.isDigit((lista11.get(j)).charAt(0))) {
+                                    if ((lista1.get(i)).equals(lista11.get(j)) && (lista2.get(i)).equals(lista12.get(j))) {
+                                        if ((lista3.get(i)).equals(lista13.get(j))) {
+                                            if ((lista6.get(i)).equals(lista16.get(j))) {
                                                 movesecondarray = j + 1;
                                             } else {
-                                                IntegerDR = Integer.parseInt((String)lista6.get(i));
-                                                IntegetPRD = Integer.parseInt((String)lista16.get(j));
+                                                IntegerDR = Integer.parseInt(lista6.get(i));
+                                                IntegetPRD = Integer.parseInt(lista16.get(j));
                                                 IntegerDRPRD = IntegerDR - IntegetPRD;
-                                                System.out.println("Size : " + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + IntegerDRPRD);
+                                                System.out.println("Size : " + lista1.get(i) + " " + lista2.get(i) + " " + lista3.get(i) + " " + lista11.get(j) + " " + lista12.get(j) + " " + lista13.get(j) + " " + IntegerDRPRD);
                                                 arxeioeggrafisSize = new File(destination + "/" + "Compare_PROD-" + name + "Size" + ".txt");
                                                 fwSize = null;
 
@@ -670,9 +670,9 @@ public class Prod extends JFrame {
                                             }
                                             continue label308;
                                         }
-                                    } else if (!((String)lista1.get(i)).equals(lista11.get(j))) {
-                                        IntegerDR = ((String)lista1.get(i)).charAt(0);
-                                        IntegetPRD = ((String)lista11.get(j)).charAt(0);
+                                    } else if (!(lista1.get(i)).equals(lista11.get(j))) {
+                                        IntegerDR = (lista1.get(i)).charAt(0);
+                                        IntegetPRD = (lista11.get(j)).charAt(0);
                                         akeraiosDR = Integer.parseInt(String.valueOf((char)IntegerDR));
                                         akeraiosPRD = Integer.parseInt(String.valueOf((char)IntegetPRD));
                                         if (akeraiosDR < akeraiosPRD) {
@@ -686,7 +686,7 @@ public class Prod extends JFrame {
                                     }
                                 }
 
-                                if (Character.isLetter(((String)lista1.get(i)).charAt(0)) && Character.isLetter(((String)lista11.get(j)).charAt(0))) {
+                                if (Character.isLetter((lista1.get(i)).charAt(0)) && Character.isLetter((lista11.get(j)).charAt(0))) {
                                     if (((String)lista1.get(i)).equals(lista11.get(j)) && ((String)lista2.get(i)).equals(lista12.get(j))) {
                                         if (((String)lista3.get(i)).equals(lista13.get(j))) {
                                             if (((String)lista6.get(i)).equals(lista16.get(j))) {

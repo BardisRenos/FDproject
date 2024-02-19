@@ -13,8 +13,6 @@ import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.*;
@@ -41,60 +39,49 @@ public class FormGUI extends GUI {
     private ArrayList<String> listaArxeion = new ArrayList();
 
     FormGUI() {
-        this.exit.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                Thread threadExit = new Thread(new Runnable() {
-                    public void run() {
-                        System.exit(0);
-                    }
-                });
-                threadExit.start();
-            }
+        this.exit.addActionListener(e -> {
+            Thread threadExit = new Thread(() -> System.exit(0));
+            threadExit.start();
         });
         this.OnomaArxieou.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 FormGUI.this.OnomaArxieou.setText("");
             }
         });
-        this.Destination.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setFileSelectionMode(1);
-                fileChooser.setAcceptAllFileFilterUsed(false);
-                fileChooser.setPreferredSize(new Dimension(700, 700));
-                int rval = fileChooser.showOpenDialog((Component)null);
-                if (rval == 0) {
-                    FormGUI.this.OnomaEksagogis.setText(fileChooser.getSelectedFile().toString());
-                }
 
+        this.Destination.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(1);
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.setPreferredSize(new Dimension(700, 700));
+            int rval = fileChooser.showOpenDialog((Component)null);
+            if (rval == 0) {
+                FormGUI.this.OnomaEksagogis.setText(fileChooser.getSelectedFile().toString());
             }
+
         });
-        this.DRbutton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setFileSelectionMode(0);
-                fileChooser.setAcceptAllFileFilterUsed(true);
-                fileChooser.setPreferredSize(new Dimension(700, 700));
-                int rval = fileChooser.showOpenDialog((Component)null);
-                if (rval == 0) {
-                    FormGUI.this.OnomaDr.setText(fileChooser.getSelectedFile().toString());
-                    FormGUI.folder = fileChooser.getCurrentDirectory().toString();
-                }
-
+        this.DRbutton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(0);
+            fileChooser.setAcceptAllFileFilterUsed(true);
+            fileChooser.setPreferredSize(new Dimension(700, 700));
+            int rval = fileChooser.showOpenDialog((Component)null);
+            if (rval == 0) {
+                FormGUI.this.OnomaDr.setText(fileChooser.getSelectedFile().toString());
+                FormGUI.folder = fileChooser.getCurrentDirectory().toString();
             }
+
         });
-        this.PRDbutton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser(FormGUI.folder);
-                fileChooser.setFileSelectionMode(0);
-                fileChooser.setAcceptAllFileFilterUsed(true);
-                fileChooser.setPreferredSize(new Dimension(700, 700));
-                int rval = fileChooser.showOpenDialog((Component)null);
-                if (rval == 0) {
-                    FormGUI.this.OnomaPRD.setText(fileChooser.getSelectedFile().toString());
-                }
-
+        this.PRDbutton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser(FormGUI.folder);
+            fileChooser.setFileSelectionMode(0);
+            fileChooser.setAcceptAllFileFilterUsed(true);
+            fileChooser.setPreferredSize(new Dimension(700, 700));
+            int rval = fileChooser.showOpenDialog((Component)null);
+            if (rval == 0) {
+                FormGUI.this.OnomaPRD.setText(fileChooser.getSelectedFile().toString());
             }
+
         });
         this.OnomaDr.setDropTarget(new DropTarget() {
             public synchronized void drop(DropTargetDropEvent evt) {
@@ -144,60 +131,55 @@ public class FormGUI extends GUI {
 
             }
         });
-        this.Apotelesma.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                FormGUI.onomaproorismou = FormGUI.this.OnomaEksagogis.getText().toString();
-                FormGUI.onomaproorismou = FormGUI.onomaproorismou.replace("\\", "/");
-                FormGUI.onomatouarxeiouString = FormGUI.this.OnomaArxieou.getText().toString();
-                FormGUI.onomaArxikouDR = FormGUI.this.OnomaDr.getText().toString();
-                FormGUI.onomaArxikouDR = FormGUI.onomaArxikouDR.replace("\\", "/");
-                FormGUI.onomaArxikouPRD = FormGUI.this.OnomaPRD.getText().toString();
-                FormGUI.onomaArxikouPRD = FormGUI.onomaArxikouPRD.replace("\\", "/");
-                Thread threadButton = new Thread(new Runnable() {
-                    public void run() {
-                        try {
-                            File file = new File(FormGUI.onomaproorismou + "/" + "Compare_Files-" + FormGUI.onomatouarxeiouString);
-                            if (file.exists()) {
-                                JOptionPane.showMessageDialog((Component)null, "The Directory already exists");
-                                FormGUI.this.OnomaArxieou.setText("");
-                            } else if (!FormGUI.onomaArxikouDR.equalsIgnoreCase("MFD_DR.txt") && !FormGUI.onomaArxikouPRD.equalsIgnoreCase("MFD_PRD.txt")) {
-                                FormGUI.this.savetofile(FormGUI.onomaArxikouDR, FormGUI.onomaArxikouPRD, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
-                                FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                                FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                                FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                                JOptionPane.showMessageDialog((Component)null, "The comparison finished successfully");
-                                FormGUI.this.OnomaDr.setText("");
-                                FormGUI.this.OnomaPRD.setText("");
-                                FormGUI.this.OnomaEksagogis.setText("");
-                                FormGUI.this.OnomaArxieou.setText("");
-                            } else {
-                                JOptionPane.showMessageDialog((Component)null, "Files are not compatible. Please choose a MFD_DR or MFD_PRD files");
-                                FormGUI.this.OnomaDr.setText("");
-                                FormGUI.this.OnomaPRD.setText("");
-                                FormGUI.this.OnomaEksagogis.setText("");
-                                FormGUI.this.OnomaArxieou.setText("");
-                            }
-                        } catch (Throwable var2) {
-                            var2.printStackTrace();
-                        }
+        this.Apotelesma.addActionListener(e -> {
+            FormGUI.onomaproorismou = FormGUI.this.OnomaEksagogis.getText().toString();
+            FormGUI.onomaproorismou = FormGUI.onomaproorismou.replace("\\", "/");
+            FormGUI.onomatouarxeiouString = FormGUI.this.OnomaArxieou.getText().toString();
+            FormGUI.onomaArxikouDR = FormGUI.this.OnomaDr.getText().toString();
+            FormGUI.onomaArxikouDR = FormGUI.onomaArxikouDR.replace("\\", "/");
+            FormGUI.onomaArxikouPRD = FormGUI.this.OnomaPRD.getText().toString();
+            FormGUI.onomaArxikouPRD = FormGUI.onomaArxikouPRD.replace("\\", "/");
 
+            Thread threadButton = new Thread(() -> {
+                try {
+                    File file = new File(FormGUI.onomaproorismou + "/" + "Compare_Files-" + FormGUI.onomatouarxeiouString);
+                    if (file.exists()) {
+                        JOptionPane.showMessageDialog(null, "The Directory already exists");
+                        FormGUI.this.OnomaArxieou.setText("");
+                    } else if (!FormGUI.onomaArxikouDR.equalsIgnoreCase("MFD_DR.txt") && !FormGUI.onomaArxikouPRD.equalsIgnoreCase("MFD_PRD.txt")) {
+                        FormGUI.this.savetofile(FormGUI.onomaArxikouDR, FormGUI.onomaArxikouPRD, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
+                        FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                        FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                        FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                        JOptionPane.showMessageDialog(null, "The comparison finished successfully");
+                        FormGUI.this.OnomaDr.setText("");
+                        FormGUI.this.OnomaPRD.setText("");
+                        FormGUI.this.OnomaEksagogis.setText("");
+                        FormGUI.this.OnomaArxieou.setText("");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Files are not compatible. Please choose a MFD_DR or MFD_PRD files");
+                        FormGUI.this.OnomaDr.setText("");
+                        FormGUI.this.OnomaPRD.setText("");
+                        FormGUI.this.OnomaEksagogis.setText("");
+                        FormGUI.this.OnomaArxieou.setText("");
                     }
-                });
-                threadButton.start();
-            }
+                } catch (Throwable var2) {
+                    var2.printStackTrace();
+                }
+
+            });
+            threadButton.start();
         });
-        this.back.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                new MainGUI();
-                FormGUI.this.dispose();
-            }
+        this.back.addActionListener(arg0 -> {
+            new MainGUI();
+            FormGUI.this.dispose();
         });
     }
 
     public void exportToExcelDadE(String destination, String name) throws Throwable {
         String[] headerStrings = new String[]{"QualifierDR", "FilenameDR", "FcycDR", "DadEDR", "DadTDR", "SizeDR", "F/LDR", "Last Ref DateDR", "Last Ref TimeDR", "QualifierPRD", "FilenamePRD", "FcycPRD", "DadEPRD", "DadTPRD", "SizePRD", "F/LPRD", "Last Ref DatePRD", "Last Ref TimeDR", "Result"};
         String[] column = null;
-        LineNumberReader lineNumberReader = new LineNumberReader(new FileReader(new File(destination + "/" + "Compare_Files-" + name + "/" + "Compare_Files-" + name + "DadE" + ".txt")));
+        LineNumberReader lineNumberReader = new LineNumberReader(new FileReader(destination + "/" + "Compare_Files-" + name + "/" + "Compare_Files-" + name + "DadE" + ".txt"));
         lineNumberReader.skip(Long.MAX_VALUE);
         int resultoflines = lineNumberReader.getLineNumber();
         lineNumberReader.close();
@@ -364,7 +346,7 @@ public class FormGUI extends GUI {
             for(int var28 = 0; var28 < var29; ++var28) {
                 String columnString = var30[var28];
                 Cell cell1 = row.createCell(columnCount);
-                if (columnString instanceof String) {
+                if (columnString != null) {
                     long number;
                     if (columnString.startsWith("-") && columnString.matches("-?\\d+")) {
                         number = Long.valueOf(columnString);
@@ -393,15 +375,9 @@ public class FormGUI extends GUI {
         Throwable var44 = null;
 
         try {
-            FileOutputStream outputStream = new FileOutputStream(destination + "/" + "Compare_Files-" + name + "/" + "Compare_Files-" + name + "DadT" + ".xls");
 
-            try {
+            try (FileOutputStream outputStream = new FileOutputStream(destination + "/" + "Compare_Files-" + name + "/" + "Compare_Files-" + name + "DadT" + ".xls")) {
                 workbook.write(outputStream);
-            } finally {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-
             }
 
         } catch (Throwable var41) {
@@ -514,9 +490,7 @@ public class FormGUI extends GUI {
             try {
                 workbook.write(outputStream);
             } finally {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
+                outputStream.close();
 
             }
 
@@ -555,32 +529,16 @@ public class FormGUI extends GUI {
         int countgrammata = 0;
         int countgrammataPRD = 0;
         int vrikaxaraktira = 0;
-        String line = null;
-        String line1 = null;
+        String line;
+        String line1;
         String[] onomata = null;
-        String[] onomata2 = null;
+        String[] onomata2;
         destination = destination + "/" + "Compare_Files-" + name;
-        (new File(destination)).mkdir();
+        (new File(destination.trim())).mkdir();
 
-        File file = new File(onomaDR);
-//        FileInputStream file = new FileInputStream(onomaDR);
+        BufferedReader brDR = getBufferedReader(onomaDR);
+        BufferedReader brPrd = getBufferedReader(onomaPRD);
 
-//        try {
-//            file;
-//        } catch (FileNotFoundException var78) {
-//            var78.printStackTrace();
-//        }
-
-        BufferedReader brDR = new BufferedReader(File);
-        FileInputStream file2 = null;
-
-        try {
-            file2 = new FileInputStream(onomaPRD);
-        } catch (IOException var77) {
-            var77.printStackTrace();
-        }
-
-        BufferedReader brPrd = new BufferedReader(new InputStreamReader(file2));
 
         while(true) {
             while((line = brDR.readLine()) != null) {
@@ -655,6 +613,7 @@ public class FormGUI extends GUI {
 
             while(true) {
                 while((line1 = brPrd.readLine()) != null) {
+//                    System.out.println("The line is: "+ line1);
                     if (line1.contains("Qualifier") && !line1.contains("Generated:") && !line1.contains("------------")) {
                         brPrd.readLine();
                         ++count1;
@@ -726,8 +685,8 @@ public class FormGUI extends GUI {
 
                 int akeraiosDR;
                 for(akeraiosDR = 0; akeraiosDR < lista6.size(); ++akeraiosDR) {
-                    if (((String)lista6.get(akeraiosDR)).equals("U") || ((String)lista6.get(akeraiosDR)).equals("L")) {
-                        System.out.println((String)lista6.get(akeraiosDR) + " : " + (String)lista1.get(akeraiosDR) + " : " + (String)lista2.get(akeraiosDR));
+                    if ((lista6.get(akeraiosDR)).equals("U") || (lista6.get(akeraiosDR)).equals("L")) {
+                        System.out.println(lista6.get(akeraiosDR) + " : " + lista1.get(akeraiosDR) + " : " + lista2.get(akeraiosDR));
                     }
                 }
 //
@@ -754,12 +713,12 @@ public class FormGUI extends GUI {
                                 continue label448;
                             }
 
-                            lista1String = (String)lista1.get(i);
-                            lista2String = (String)lista2.get(i);
-                            lista3String = (String)lista3.get(i);
-                            lista11String = (String)lista11.get(j);
-                            lista12String = (String)lista12.get(j);
-                            lista13String = (String)lista13.get(j);
+                            lista1String = lista1.get(i);
+                            lista2String = lista2.get(i);
+                            lista3String = lista3.get(i);
+                            lista11String = lista11.get(j);
+                            lista12String = lista12.get(j);
+                            lista13String = lista13.get(j);
                             int IntegerDR;
                             int IntegetPRD;
                             int IntegerDRPRD;
@@ -767,12 +726,14 @@ public class FormGUI extends GUI {
                             FileWriter fwSize;
                             BufferedWriter outputSize;
 //                            int akeraiosPRD = 0;
-                            if (((String)lista1.get(i)).startsWith("$") && ((String)lista11.get(j)).startsWith("$")) {
-                                if (((String)lista1.get(i)).equals(lista11.get(j)) && ((String)lista2.get(i)).equals(lista12.get(j)) && ((String)lista3.get(i)).equals(lista13.get(j))) {
-                                    if (!((String)lista4.get(i)).equals(lista14.get(j))) {
-                                        IntegerDR = Integer.parseInt((String)lista4.get(i));
-                                        IntegetPRD = Integer.parseInt((String)lista14.get(j));
+
+                            if ((lista1.get(i)).startsWith("$") && (lista11.get(j)).startsWith("$")) {
+                                if ((lista1.get(i)).equals(lista11.get(j)) && (lista2.get(i)).equals(lista12.get(j)) && (lista3.get(i)).equals(lista13.get(j))) {
+                                    if (!(lista4.get(i)).equals(lista14.get(j))) {
+                                        IntegerDR = Integer.parseInt(lista4.get(i));
+                                        IntegetPRD = Integer.parseInt(lista14.get(j));
                                         IntegerDRPRD = IntegerDR - IntegetPRD;
+                                        System.out.println("Before the file: "+ lista1.get(i) + lista2.get(i) + lista3.get(i) + lista4.get(i) + IntegerDRPRD );
                                         arxeioeggrafisSize = new File(destination + "/" + "Compare_Files-" + name + "DadE.txt");
                                         fwSize = null;
 
@@ -786,18 +747,19 @@ public class FormGUI extends GUI {
 
                                         try {
                                             outputSize.write(String.format("%-12s %-12s %-5s %-5s %-5s %-5s %-2s %-5s %-10s %-12s %-12s %-5s %-5s %-5s %-5s %-2s %-5s %-10s %-10s", lista1.get(i), lista2.get(i), lista3.get(i), lista4.get(i), lista5.get(i), lista6.get(i), lista7.get(i), lista8.get(i), lista9.get(i), lista11.get(j), lista12.get(j), lista13.get(j), lista14.get(j), lista15.get(j), lista16.get(j), lista17.get(j), lista18.get(j), lista19.get(j), IntegerDRPRD));
+                                            System.out.println(lista1.get(i) + lista2.get(i) + lista3.get(i) + lista4.get(i) + IntegerDRPRD );
                                             outputSize.newLine();
                                             outputSize.close();
                                         } catch (IndexOutOfBoundsException | IOException var57) {
                                             var57.printStackTrace();
                                         }
 
-                                        System.out.println("DadE : " + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista4.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + (String)lista14.get(j) + " " + IntegerDRPRD);
+                                        System.out.println("DadE : " + lista1.get(i) + " " + lista2.get(i) + " " + lista3.get(i) + " " + lista4.get(i) + " " + lista11.get(j) + " " + lista12.get(j) + " " + lista13.get(j) + " " + lista14.get(j) + " " + IntegerDRPRD);
                                     }
 
-                                    if (!((String)lista5.get(i)).equals(lista15.get(j))) {
-                                        IntegerDR = Integer.parseInt((String)lista5.get(i));
-                                        IntegetPRD = Integer.parseInt((String)lista15.get(j));
+                                    if (!(lista5.get(i)).equals(lista15.get(j))) {
+                                        IntegerDR = Integer.parseInt(lista5.get(i));
+                                        IntegetPRD = Integer.parseInt(lista15.get(j));
                                         IntegerDRPRD = IntegerDR - IntegetPRD;
                                         arxeioeggrafisSize = new File(destination + "/" + "Compare_Files-" + name + "DadT.txt");
                                         fwSize = null;
@@ -818,17 +780,16 @@ public class FormGUI extends GUI {
                                             var59.printStackTrace();
                                         }
 
-                                        System.out.println("DadE : " + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista5.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + (String)lista15.get(j) + " " + IntegerDRPRD);
+                                        System.out.println("DadE : " + lista1.get(i) + " " + lista2.get(i) + " " + lista3.get(i) + " " + lista5.get(i) + " " + lista11.get(j) + " " + lista12.get(j) + " " + lista13.get(j) + " " + lista15.get(j) + " " + IntegerDRPRD);
                                     }
 
-                                    if (((String)lista6.get(i)).equals(lista16.get(j))) {
+                                    if (lista6.get(i).equals(lista16.get(j))) {
                                         ++count;
                                         movesecondarray = j + 1;
                                     } else {
-                                        IntegerDR = Integer.parseInt((String)lista6.get(i));
-                                        IntegetPRD = Integer.parseInt((String)lista16.get(j));
+                                        IntegerDR = Integer.parseInt(lista6.get(i));
+                                        IntegetPRD = Integer.parseInt(lista16.get(j));
                                         IntegerDRPRD = IntegerDR - IntegetPRD;
-                                        System.out.println("ta stoixeia einai :" + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + IntegerDRPRD);
                                         ++vrikeSizegiaArxeio;
                                         arxeioeggrafisSize = new File(destination + "/" + "Compare_Files-" + name + "Size" + ".txt");
                                         fwSize = null;
@@ -854,9 +815,9 @@ public class FormGUI extends GUI {
                                     continue label448;
                                 }
 
-                                if (!((String)lista1.get(i)).equals(lista11.get(j)) || !((String)lista2.get(i)).equals(lista12.get(j))) {
-                                    akeraiosDR = Integer.parseInt((String)lista3.get(i));
-                                    akeraiosPRD = Integer.parseInt((String)lista13.get(j));
+                                if (!lista1.get(i).equals(lista11.get(j)) || !((String)lista2.get(i)).equals(lista12.get(j))) {
+                                    akeraiosDR = Integer.parseInt(lista3.get(i));
+                                    akeraiosPRD = Integer.parseInt(lista13.get(j));
                                     if (akeraiosDR > akeraiosPRD) {
                                         continue label448;
                                     }
@@ -865,19 +826,19 @@ public class FormGUI extends GUI {
                                     continue;
                                 }
 
-                                if (Character.isLetter(((String)lista2.get(i)).charAt(0)) && Character.isLetter(((String)lista12.get(j)).charAt(0)) && ((String)lista12.get(j)).equals("PFM")) {
+                                if (Character.isLetter(lista2.get(i).charAt(0)) && Character.isLetter(lista12.get(j).charAt(0)) && lista12.get(j).equals("PFM")) {
                                     continue label448;
                                 }
                             }
 
-                            if (((String)lista1.get(i)).startsWith("$") && Character.isDigit(((String)lista11.get(j)).charAt(0))) {
+                            if (lista1.get(i).startsWith("$") && Character.isDigit(lista11.get(j).charAt(0))) {
                                 continue label448;
                             }
 
-                            if (Character.isDigit(((String)lista1.get(i)).charAt(0)) && ((String)lista11.get(j)).startsWith("$")) {
+                            if (Character.isDigit(lista1.get(i).charAt(0)) && lista11.get(j).startsWith("$")) {
                                 ++j;
                             } else {
-                                if (Character.isDigit(((String)lista1.get(i)).charAt(0)) && Character.isLetter(((String)lista11.get(j)).charAt(0))) {
+                                if (Character.isDigit(lista1.get(i).charAt(0)) && Character.isLetter(lista11.get(j).charAt(0))) {
                                     continue label448;
                                 }
 
@@ -910,9 +871,9 @@ public class FormGUI extends GUI {
                                                 System.out.println("DadE : " + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista4.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + (String)lista14.get(j) + " " + IntegerDRPRD);
                                             }
 
-                                            if (!((String)lista5.get(i)).equals(lista15.get(j))) {
-                                                IntegerDR = Integer.parseInt((String)lista5.get(i));
-                                                IntegetPRD = Integer.parseInt((String)lista15.get(j));
+                                            if (!lista5.get(i).equals(lista15.get(j))) {
+                                                IntegerDR = Integer.parseInt(lista5.get(i));
+                                                IntegetPRD = Integer.parseInt(lista15.get(j));
                                                 IntegerDRPRD = IntegerDR - IntegetPRD;
                                                 arxeioeggrafisSize = new File(destination + "/" + "Compare_Files-" + name + "DadT" + ".txt");
                                                 fwSize = null;
@@ -936,13 +897,13 @@ public class FormGUI extends GUI {
                                                 System.out.println("DadE : " + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista5.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + (String)lista15.get(j) + " " + IntegerDRPRD);
                                             }
 
-                                            if (((String)lista6.get(i)).equals(lista16.get(j))) {
+                                            if (lista6.get(i).equals(lista16.get(j))) {
                                                 movesecondarray = j + 1;
                                             } else {
-                                                IntegerDR = Integer.parseInt((String)lista6.get(i));
-                                                IntegetPRD = Integer.parseInt((String)lista16.get(j));
+                                                IntegerDR = Integer.parseInt(lista6.get(i));
+                                                IntegetPRD = Integer.parseInt(lista16.get(j));
                                                 IntegerDRPRD = IntegerDR - IntegetPRD;
-                                                System.out.println("Size : " + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + IntegerDRPRD);
+                                                System.out.println("Size : " + lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + IntegerDRPRD);
                                                 arxeioeggrafisSize = new File(destination + "/" + "Compare_Files-" + name + "Size" + ".txt");
                                                 fwSize = null;
 
@@ -966,9 +927,9 @@ public class FormGUI extends GUI {
                                             }
                                             continue label448;
                                         }
-                                    } else if (!((String)lista1.get(i)).equals(lista11.get(j))) {
-                                        IntegerDR = ((String)lista1.get(i)).charAt(0);
-                                        IntegetPRD = ((String)lista11.get(j)).charAt(0);
+                                    } else if (!lista1.get(i).equals(lista11.get(j))) {
+                                        IntegerDR = lista1.get(i).charAt(0);
+                                        IntegetPRD = lista11.get(j).charAt(0);
                                         akeraiosDR = Integer.parseInt(String.valueOf((char)IntegerDR));
                                         akeraiosPRD = Integer.parseInt(String.valueOf((char)IntegetPRD));
                                         if (akeraiosDR < akeraiosPRD) {
@@ -982,13 +943,13 @@ public class FormGUI extends GUI {
                                     }
                                 }
 
-                                if (Character.isLetter(((String)lista1.get(i)).charAt(0)) && Character.isLetter(((String)lista11.get(j)).charAt(0))) {
+                                if (Character.isLetter(lista1.get(i).charAt(0)) && Character.isLetter(lista11.get(j).charAt(0))) {
                                     String tolathos;
-                                    if (((String)lista1.get(i)).equals(lista11.get(j)) && ((String)lista2.get(i)).equals(lista12.get(j))) {
+                                    if (lista1.get(i).equals(lista11.get(j)) && lista2.get(i).equals(lista12.get(j))) {
                                         if (((String)lista3.get(i)).equals(lista13.get(j))) {
-                                            if (!((String)lista4.get(i)).equals(lista14.get(j))) {
-                                                IntegerDR = Integer.parseInt((String)lista4.get(i));
-                                                IntegetPRD = Integer.parseInt((String)lista14.get(j));
+                                            if (!lista4.get(i).equals(lista14.get(j))) {
+                                                IntegerDR = Integer.parseInt(lista4.get(i));
+                                                IntegetPRD = Integer.parseInt(lista14.get(j));
                                                 IntegerDRPRD = IntegerDR - IntegetPRD;
                                                 arxeioeggrafisSize = new File(destination + "/" + "Compare_Files-" + name + "DadE" + ".txt");
                                                 fwSize = null;
@@ -1009,12 +970,12 @@ public class FormGUI extends GUI {
                                                     var65.printStackTrace();
                                                 }
 
-                                                System.out.println("DadE : " + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista4.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + (String)lista14.get(j) + " " + IntegerDRPRD);
+                                                System.out.println("DadE : " + lista1.get(i) + " " + lista2.get(i) + " " + lista3.get(i) + " " + lista4.get(i) + " " + lista11.get(j) + " " + lista12.get(j) + " " + lista13.get(j) + " " + lista14.get(j) + " " + IntegerDRPRD);
                                             }
 
-                                            if (!((String)lista5.get(i)).equals(lista15.get(j))) {
-                                                IntegerDR = Integer.parseInt((String)lista5.get(i));
-                                                IntegetPRD = Integer.parseInt((String)lista15.get(j));
+                                            if (!lista5.get(i).equals(lista15.get(j))) {
+                                                IntegerDR = Integer.parseInt(lista5.get(i));
+                                                IntegetPRD = Integer.parseInt(lista15.get(j));
                                                 IntegerDRPRD = IntegerDR - IntegetPRD;
                                                 arxeioeggrafisSize = new File(destination + "/" + "Compare_Files-" + name + "DadT" + ".txt");
                                                 fwSize = null;
@@ -1035,27 +996,27 @@ public class FormGUI extends GUI {
                                                     var63.printStackTrace();
                                                 }
 
-                                                System.out.println("DadT : " + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista5.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + (String)lista15.get(j) + " " + IntegerDRPRD);
+                                                System.out.println("DadT : " + lista1.get(i) + " " + lista2.get(i) + " " + lista3.get(i) + " " + lista5.get(i) + " " + lista11.get(j) + " " + lista12.get(j) + " " + lista13.get(j) + " " + lista15.get(j) + " " + IntegerDRPRD);
                                             }
 
-                                            if (((String)lista6.get(i)).equals(lista16.get(j))) {
+                                            if (lista6.get(i).equals(lista16.get(j))) {
                                                 ++count;
                                                 movesecondarray = j + 1;
                                             } else {
-                                                IntegerDR = Integer.parseInt(((String)lista6.get(i)).trim());
-                                                if (Character.isLetter(((String)lista6.get(i)).charAt(0))) {
-                                                    System.out.println((String)lista6.get(i) + " : " + (String)lista1.get(i) + " : " + (String)lista2.get(i) + " : " + (String)lista3.get(i) + ":" + (String)lista4.get(i) + " : " + (String)lista5.get(i));
+                                                IntegerDR = Integer.parseInt(lista6.get(i).trim());
+                                                if (Character.isLetter(lista6.get(i).charAt(0))) {
+                                                    System.out.println(lista6.get(i) + " : " + lista1.get(i) + " : " + (String)lista2.get(i) + " : " + lista3.get(i) + ":" + lista4.get(i) + " : " + lista5.get(i));
                                                 }
 
-                                                if (Character.isLetter(((String)lista16.get(j)).charAt(0))) {
-                                                    tolathos = (String)lista16.get(j);
-                                                    System.out.println((String)lista16.get(j) + " : " + (String)lista11.get(j) + " : " + (String)lista12.get(j) + " : " + (String)lista13.get(j) + ":" + (String)lista14.get(j) + " : " + (String)lista15.get(j));
+                                                if (Character.isLetter(lista16.get(j).charAt(0))) {
+                                                    tolathos = lista16.get(j);
+                                                    System.out.println(lista16.get(j) + " : " + lista11.get(j) + " : " + (String)lista12.get(j) + " : " + lista13.get(j) + ":" + lista14.get(j) + " : " + lista15.get(j));
                                                 }
 
-                                                IntegetPRD = Integer.parseInt(((String)lista16.get(j)).trim());
+                                                IntegetPRD = Integer.parseInt(lista16.get(j).trim());
                                                 System.out.println("The IntegerPrd value :" + IntegetPRD + " : " + IntegerDR);
                                                 IntegerDRPRD = IntegerDR - IntegetPRD;
-                                                System.out.println("Size :" + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + IntegerDRPRD);
+                                                System.out.println("Size :" + lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + IntegerDRPRD);
                                                 arxeioeggrafisSize = new File(destination + "/" + "Compare_Files-" + name + "Size" + ".txt");
                                                 fwSize = null;
 
@@ -1081,8 +1042,8 @@ public class FormGUI extends GUI {
                                         }
 
                                         if (!((String)lista3.get(i)).equals(lista13.get(j))) {
-                                            akeraiosDR = Integer.parseInt((String)lista3.get(i));
-                                            akeraiosPRD = Integer.parseInt((String)lista13.get(j));
+                                            akeraiosDR = Integer.parseInt(lista3.get(i));
+                                            akeraiosPRD = Integer.parseInt(lista13.get(j));
                                             if (akeraiosDR < akeraiosPRD) {
                                                 continue label448;
                                             }
@@ -1093,20 +1054,20 @@ public class FormGUI extends GUI {
                                     }
 
                                     if (!((String)lista1.get(i)).equals(lista11.get(j))) {
-                                        if (((String)lista1.get(i)).compareTo((String)lista11.get(j)) < 0) {
+                                        if (((String)lista1.get(i)).compareTo(lista11.get(j)) < 0) {
                                             continue label448;
                                         }
 
-                                        if (((String)lista1.get(i)).compareTo((String)lista11.get(j)) > 0) {
+                                        if (lista1.get(i).compareTo(lista11.get(j)) > 0) {
                                             ++j;
                                             continue;
                                         }
                                     }
 
-                                    if (((String)lista1.get(i)).equals(lista11.get(j)) && !((String)lista2.get(i)).equals(lista12.get(j))) {
-                                        String DR = ((String)lista2.get(i)).substring(0, 1);
-                                        tolathos = ((String)lista12.get(j)).substring(0, 1);
-                                        if (((String)lista2.get(i)).compareTo((String)lista12.get(j)) < 0) {
+                                    if (lista1.get(i).equals(lista11.get(j)) && !lista2.get(i).equals(lista12.get(j))) {
+                                        String DR = lista2.get(i).substring(0, 1);
+                                        tolathos = lista12.get(j).substring(0, 1);
+                                        if (lista2.get(i).compareTo(lista12.get(j)) < 0) {
                                             movesecondarray = j;
                                             continue label448;
                                         }
@@ -1118,11 +1079,15 @@ public class FormGUI extends GUI {
                         }
                     }
                 }
-
-                System.out.println(lista11String.length() + " : " + lista12String.length() + " : " + lista13String.length());
                 return 1;
             }
         }
+    }
+
+    private BufferedReader getBufferedReader(String filePath) throws FileNotFoundException {
+        File file = new File(filePath.trim());
+        FileReader fileReader = new FileReader(file);
+        return new BufferedReader(fileReader);
     }
 
     public static void main(String[] args) {

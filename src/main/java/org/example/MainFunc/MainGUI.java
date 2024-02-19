@@ -54,37 +54,25 @@ public class MainGUI extends JFrame {
         this.setResizable(false);
         this.setVisible(true);
 
-        this.CompareFile.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                new FormGUI();
-                MainGUI.this.dispose();
-            }
+        this.CompareFile.addActionListener(arg0 -> {
+            new FormGUI();
+            MainGUI.this.dispose();
         });
-        this.DiskCompare.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                new AnaktisiArxeion();
-                MainGUI.this.dispose();
-            }
+        this.DiskCompare.addActionListener(arg0 -> {
+            new AnaktisiArxeion();
+            MainGUI.this.dispose();
         });
 
-        this.DBVOL.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new DBVOL();
-                MainGUI.this.dispose();
-            }
+        this.DBVOL.addActionListener(e -> {
+            new DBVOL();
+            MainGUI.this.dispose();
         });
 
-        this.CompareDBVOL.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new GUICompareDBVOL();
-                MainGUI.this.dispose();
-            }
+        this.CompareDBVOL.addActionListener(e -> {
+            new GUICompareDBVOL();
+            MainGUI.this.dispose();
         });
 
-        this.Exit.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                System.exit(0);
-            }
-        });
+        this.Exit.addActionListener(arg0 -> System.exit(0));
     }
 }

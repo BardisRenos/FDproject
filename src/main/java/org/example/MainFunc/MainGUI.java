@@ -26,7 +26,7 @@ public class MainGUI extends JFrame {
     public MainGUI() {
         super("Main");
         this.getContentPane().setBackground(Color.yellow);
-        this.setSize(300, 300);
+        this.setSize(400, 400);
         this.setLayout((LayoutManager)null);
         this.Copyright = new JLabel("Created by Renos Bardis");
         this.Copyright.setBounds(5, 250, 270, 20);
@@ -51,7 +51,7 @@ public class MainGUI extends JFrame {
 
         this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
         this.setDefaultCloseOperation(3);
-        this.setResizable(false);
+        this.setResizable(true);
         this.setVisible(true);
 
         this.CompareFile.addActionListener(arg0 -> {

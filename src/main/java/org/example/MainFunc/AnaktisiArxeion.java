@@ -19,6 +19,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 public class AnaktisiArxeion extends DiskGUI {
     private static final long serialVersionUID = 1L;
@@ -31,27 +32,22 @@ public class AnaktisiArxeion extends DiskGUI {
     private List<File> droppedFiles;
     private ArrayList<String> listaArxeion = new ArrayList();
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         new AnaktisiArxeion();
     }
 
-    AnaktisiArxeion() {
-        this.ExitButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                System.exit(0);
-            }
-        });
-        this.fileChooser.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setFileSelectionMode(0);
-                fileChooser.setAcceptAllFileFilterUsed(true);
-                fileChooser.setPreferredSize(new Dimension(700, 700));
-                int rval = fileChooser.showOpenDialog((Component)null);
-                if (rval == 0) {
-                    AnaktisiArxeion.this.EpilogiArxeiou.setText(fileChooser.getSelectedFile().toString());
-                }
+    public AnaktisiArxeion() {
+        this.ExitButton.addActionListener(arg0 -> System.exit(0));
 
+        this.fileChooser.addActionListener(arg0 -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(0);
+            fileChooser.setAcceptAllFileFilterUsed(true);
+            fileChooser.setPreferredSize(new Dimension(700, 700));
+
+            int rval = fileChooser.showOpenDialog(null);
+            if (rval == 0) {
+                AnaktisiArxeion.this.EpilogiArxeiou.setText(fileChooser.getSelectedFile().toString());
             }
         });
 

@@ -19,10 +19,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Scanner;
 
 public class FormGUI extends GUI {
     public static String folder = null;
@@ -36,7 +34,9 @@ public class FormGUI extends GUI {
     public static String destination = null;
     private boolean deleteText = true;
     private List<File> droppedFiles;
-    private ArrayList<String> listaArxeion = new ArrayList();
+    private ArrayList<String> listaArxeion = new ArrayList<>();
+    private File[] selectedFiles;
+    private StringBuilder fileNames = new StringBuilder();
 
     FormGUI() {
         this.exit.addActionListener(e -> {
@@ -70,7 +70,6 @@ public class FormGUI extends GUI {
                 FormGUI.this.OnomaDr.setText(fileChooser.getSelectedFile().toString());
                 FormGUI.folder = fileChooser.getCurrentDirectory().toString();
             }
-
         });
         this.PRDbutton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser(FormGUI.folder);
@@ -81,7 +80,6 @@ public class FormGUI extends GUI {
             if (rval == 0) {
                 FormGUI.this.OnomaPRD.setText(fileChooser.getSelectedFile().toString());
             }
-
         });
         this.OnomaDr.setDropTarget(new DropTarget() {
             public synchronized void drop(DropTargetDropEvent evt) {
@@ -131,6 +129,49 @@ public class FormGUI extends GUI {
 
             }
         });
+
+        this.PRD_DR_Checkbox.addActionListener(e -> {
+            // Check if PRD_DR_Checkbox is selected
+            boolean isSelected = PRD_DR_Checkbox.isSelected();
+
+            // Logic for handling multiple files when PRD_DR_Checkbox is selected
+            if (isSelected) {
+                // Disable/Enable the text fields based on checkbox state
+                FormGUI.this.OnomaDr.setEditable(false);
+                FormGUI.this.OnomaDr.setBackground(Color.DARK_GRAY);
+                FormGUI.this.DRbutton.setEnabled(false);
+                FormGUI.this.DRbutton.setBackground(Color.DARK_GRAY);
+
+                FormGUI.this.OnomaPRD.setEditable(false);
+                FormGUI.this.OnomaPRD.setBackground(Color.DARK_GRAY);
+                FormGUI.this.PRDbutton.setEnabled(false);
+                FormGUI.this.PRDbutton.setBackground(Color.DARK_GRAY);
+
+                // You can add a file chooser or logic for selecting multiple files when the checkbox is selected
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setMultiSelectionEnabled(true);  // Enable multi-selection
+
+                int returnValue = fileChooser.showOpenDialog(FormGUI.this);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    selectedFiles = fileChooser.getSelectedFiles();  // Get the selected files
+                    for (File file : selectedFiles) {
+                        fileNames.append(file.getAbsolutePath()).append("; ");
+                    }
+                }
+                FormGUI.this.OnomaPRD_DR.setText(fileNames.toString());
+            } else {
+                FormGUI.this.OnomaDr.setEditable(true);
+                FormGUI.this.OnomaDr.setBackground(Color.WHITE);
+                FormGUI.this.DRbutton.setEnabled(true);
+                FormGUI.this.DRbutton.setBackground(Color.WHITE);
+
+                FormGUI.this.OnomaPRD.setEditable(true);
+                FormGUI.this.OnomaPRD.setBackground(Color.WHITE);
+                FormGUI.this.PRDbutton.setEnabled(true);
+                FormGUI.this.PRDbutton.setBackground(Color.WHITE);
+            }
+        });
+
         this.Apotelesma.addActionListener(e -> {
             FormGUI.onomaproorismou = FormGUI.this.OnomaEksagogis.getText().toString();
             FormGUI.onomaproorismou = FormGUI.onomaproorismou.replace("\\", "/");
@@ -140,40 +181,87 @@ public class FormGUI extends GUI {
             FormGUI.onomaArxikouPRD = FormGUI.this.OnomaPRD.getText().toString();
             FormGUI.onomaArxikouPRD = FormGUI.onomaArxikouPRD.replace("\\", "/");
 
-            Thread threadButton = new Thread(() -> {
-                try {
-                    File file = new File(FormGUI.onomaproorismou + "/" + "Compare_Files-" + FormGUI.onomatouarxeiouString);
-                    if (file.exists()) {
-                        JOptionPane.showMessageDialog(null, "The Directory already exists");
-                        FormGUI.this.OnomaArxieou.setText("");
-                    } else if (!FormGUI.onomaArxikouDR.equalsIgnoreCase("MFD_DR.txt") && !FormGUI.onomaArxikouPRD.equalsIgnoreCase("MFD_PRD.txt")) {
-                        boolean isFolderEmpty = FormGUI.this.savetofile(FormGUI.onomaArxikouDR, FormGUI.onomaArxikouPRD, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
-                        if (isFolderEmpty) {
-                            JOptionPane.showMessageDialog(null, "There is no different no need to create files");
+            Thread threadButton;
+            if (!PRD_DR_Checkbox.isSelected()) {
+                threadButton = new Thread(() -> {
+                    try {
+                        File file = new File(FormGUI.onomaproorismou + "/" + "Compare_Files-" + FormGUI.onomatouarxeiouString);
+                        if (file.exists()) {
+                            JOptionPane.showMessageDialog(null, "The Directory already exists");
+                            FormGUI.this.OnomaArxieou.setText("");
+                        } else if (!FormGUI.onomaArxikouDR.equalsIgnoreCase("MFD_DR.txt") && !FormGUI.onomaArxikouPRD.equalsIgnoreCase("MFD_PRD.txt")) {
+                            boolean isFolderEmpty = FormGUI.this.savetofile(FormGUI.onomaArxikouDR, FormGUI.onomaArxikouPRD, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
+                            if (isFolderEmpty) {
+                                JOptionPane.showMessageDialog(null, "There is no different no need to create files");
+                            } else {
+                                FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                                FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                                FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                                JOptionPane.showMessageDialog(null, "The comparison finished successfully");
+                                FormGUI.this.OnomaDr.setText("");
+                                FormGUI.this.OnomaPRD.setText("");
+                                FormGUI.this.OnomaEksagogis.setText("");
+                                FormGUI.this.OnomaArxieou.setText("");
+                            }
                         } else {
-                            FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                            FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                            FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                            JOptionPane.showMessageDialog(null, "The comparison finished successfully");
+                            JOptionPane.showMessageDialog(null, "Files are not compatible. Please choose a MFD_DR or MFD_PRD files");
                             FormGUI.this.OnomaDr.setText("");
                             FormGUI.this.OnomaPRD.setText("");
                             FormGUI.this.OnomaEksagogis.setText("");
                             FormGUI.this.OnomaArxieou.setText("");
                         }
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Files are not compatible. Please choose a MFD_DR or MFD_PRD files");
-                        FormGUI.this.OnomaDr.setText("");
-                        FormGUI.this.OnomaPRD.setText("");
-                        FormGUI.this.OnomaEksagogis.setText("");
-                        FormGUI.this.OnomaArxieou.setText("");
+                    } catch (Throwable var2) {
+                        var2.printStackTrace();
                     }
-                } catch (Throwable var2) {
-                    var2.printStackTrace();
-                }
-
-            });
+                });
+            }
+            else {
+                threadButton = new Thread(() -> {
+                    String[] items = fileNames.toString().split("; ");
+                    // Lists to store "DR" and "PRD" items
+                    List<String> drList = new ArrayList<>();
+                    List<String> prdList = new ArrayList<>();
+                    // Iterate through the items and classify them into respective lists
+                    for (String item : items) {
+                        if (item.contains("MFD_DR")) {
+                            drList.add(item); // Add to DR list
+                        } else if (item.contains("MFD_PRD")) {
+                            prdList.add(item); // Add to PRD list
+                        }
+                    }
+                    boolean isFolderEmpty;
+                    int index = 0;
+                    for (String drItem : drList) {
+                        index++;
+                        for (String prdItem : prdList) {
+                            if (drItem.split("-")[2].substring(0, 6).equals(prdItem.split("-")[2].substring(0, 6))) {
+                                try {
+                                    isFolderEmpty = FormGUI.this.savetofile(drItem, prdItem, FormGUI.onomatouarxeiouString + "-" + index, FormGUI.onomaproorismou);
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                                if (isFolderEmpty) {
+                                    JOptionPane.showMessageDialog(null, "There is no different no need to create files");
+                                } else {
+                                    try {
+                                        FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString + "-" + index);
+                                        FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString + "-" + index);
+                                        FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString + "-" + index);
+                                    } catch (Throwable ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                    FormGUI.this.OnomaEksagogis.setText("");
+                                    FormGUI.this.OnomaArxieou.setText("");
+                                }
+                            }
+                        }
+                    }
+                    JOptionPane.showMessageDialog(null, "The comparison finished successfully");
+                });
+            }
             threadButton.start();
         });
+
         this.back.addActionListener(arg0 -> {
             new MainGUI();
             FormGUI.this.dispose();
@@ -269,23 +357,12 @@ public class FormGUI extends GUI {
         cell = null;
 
         try {
-            FileOutputStream outputStream = new FileOutputStream(destination + "/" + "Compare_Files-" + name + "/" + "Compare_Files-" + name + "DadE" + ".xls");
-
-            try {
+            try (FileOutputStream outputStream = new FileOutputStream(destination + "/" + "Compare_Files-" + name + "/" + "Compare_Files-" + name + "DadE" + ".xls")) {
                 workbook.write(outputStream);
-            } finally {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-
             }
 
         } catch (Throwable var41) {
-            if (var44 == null) {
-                var44 = var41;
-            } else if (var44 != var41) {
-                var44.addSuppressed(var41);
-            }
+            var44 = var41;
 
             throw var44;
         }
@@ -607,7 +684,7 @@ public class FormGUI extends GUI {
                                 lista9.add(onomata[10]);
                             }
                         }
-                    } catch (ArrayIndexOutOfBoundsException var76) {
+                    } catch (ArrayIndexOutOfBoundsException ignored) {
                     }
                 }
             }
@@ -679,7 +756,7 @@ public class FormGUI extends GUI {
                                     lista19.add(onomata2[10]);
                                 }
                             }
-                        } catch (ArrayIndexOutOfBoundsException var75) {
+                        } catch (ArrayIndexOutOfBoundsException ignored) {
                         }
                     }
                 }
@@ -845,12 +922,12 @@ public class FormGUI extends GUI {
                                     continue label448;
                                 }
 
-                                if (Character.isDigit(((String)lista1.get(i)).charAt(0)) && Character.isDigit(((String)lista11.get(j)).charAt(0))) {
-                                    if (((String)lista1.get(i)).equals(lista11.get(j)) && ((String)lista2.get(i)).equals(lista12.get(j))) {
-                                        if (((String)lista3.get(i)).equals(lista13.get(j))) {
-                                            if (!((String)lista4.get(i)).equals(lista14.get(j))) {
-                                                IntegerDR = Integer.parseInt((String)lista4.get(i));
-                                                IntegetPRD = Integer.parseInt((String)lista14.get(j));
+                                if (Character.isDigit(lista1.get(i).charAt(0)) && Character.isDigit(lista11.get(j).charAt(0))) {
+                                    if (lista1.get(i).equals(lista11.get(j)) && lista2.get(i).equals(lista12.get(j))) {
+                                        if (lista3.get(i).equals(lista13.get(j))) {
+                                            if (!lista4.get(i).equals(lista14.get(j))) {
+                                                IntegerDR = Integer.parseInt(lista4.get(i));
+                                                IntegetPRD = Integer.parseInt(lista14.get(j));
                                                 IntegerDRPRD = IntegerDR - IntegetPRD;
                                                 arxeioeggrafisSize = new File(destination + "/" + "Compare_Files-" + name + "DadE" + ".txt");
                                                 fwSize = null;
@@ -871,7 +948,7 @@ public class FormGUI extends GUI {
                                                     var71.printStackTrace();
                                                 }
 
-                                                System.out.println("DadE : " + (String)lista1.get(i) + " " + (String)lista2.get(i) + " " + (String)lista3.get(i) + " " + (String)lista4.get(i) + " " + (String)lista11.get(j) + " " + (String)lista12.get(j) + " " + (String)lista13.get(j) + " " + (String)lista14.get(j) + " " + IntegerDRPRD);
+                                                System.out.println("DadE : " + lista1.get(i) + " " + lista2.get(i) + " " + lista3.get(i) + " " + lista4.get(i) + " " + lista11.get(j) + " " + lista12.get(j) + " " + lista13.get(j) + " " + lista14.get(j) + " " + IntegerDRPRD);
                                             }
 
                                             if (!lista5.get(i).equals(lista15.get(j))) {
@@ -949,7 +1026,7 @@ public class FormGUI extends GUI {
                                 if (Character.isLetter(lista1.get(i).charAt(0)) && Character.isLetter(lista11.get(j).charAt(0))) {
                                     String tolathos;
                                     if (lista1.get(i).equals(lista11.get(j)) && lista2.get(i).equals(lista12.get(j))) {
-                                        if (((String)lista3.get(i)).equals(lista13.get(j))) {
+                                        if (lista3.get(i).equals(lista13.get(j))) {
                                             if (!lista4.get(i).equals(lista14.get(j))) {
                                                 IntegerDR = Integer.parseInt(lista4.get(i));
                                                 IntegetPRD = Integer.parseInt(lista14.get(j));
@@ -1044,7 +1121,7 @@ public class FormGUI extends GUI {
                                             continue label448;
                                         }
 
-                                        if (!((String)lista3.get(i)).equals(lista13.get(j))) {
+                                        if (!lista3.get(i).equals(lista13.get(j))) {
                                             akeraiosDR = Integer.parseInt(lista3.get(i));
                                             akeraiosPRD = Integer.parseInt(lista13.get(j));
                                             if (akeraiosDR < akeraiosPRD) {
@@ -1056,8 +1133,8 @@ public class FormGUI extends GUI {
                                         }
                                     }
 
-                                    if (!((String)lista1.get(i)).equals(lista11.get(j))) {
-                                        if (((String)lista1.get(i)).compareTo(lista11.get(j)) < 0) {
+                                    if (!lista1.get(i).equals(lista11.get(j))) {
+                                        if (lista1.get(i).compareTo(lista11.get(j)) < 0) {
                                             continue label448;
                                         }
 

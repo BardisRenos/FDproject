@@ -1,25 +1,20 @@
 package org.example.MainFunc;
 
-import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 public class AnaktisiArxeion extends DiskGUI {
     private static final long serialVersionUID = 1L;
@@ -31,6 +26,9 @@ public class AnaktisiArxeion extends DiskGUI {
     private boolean deleteText = true;
     private List<File> droppedFiles;
     private ArrayList<String> listaArxeion = new ArrayList();
+    private File[] selectedFiles;
+    private StringBuilder fileNames = new StringBuilder();
+    boolean isSelected = false;
 
     public static void main(String[] args) {
         new AnaktisiArxeion();
@@ -41,65 +39,116 @@ public class AnaktisiArxeion extends DiskGUI {
 
         this.fileChooser.addActionListener(arg0 -> {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(0);
+
             fileChooser.setAcceptAllFileFilterUsed(true);
             fileChooser.setPreferredSize(new Dimension(700, 700));
 
             int rval = fileChooser.showOpenDialog(null);
-            if (rval == 0) {
+            if (rval == JFileChooser.APPROVE_OPTION) {
                 AnaktisiArxeion.this.EpilogiArxeiou.setText(fileChooser.getSelectedFile().toString());
             }
         });
 
-        this.fileExpBackUport.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
+        this.checkbox.addActionListener(e -> {
+            isSelected = checkbox.isSelected();
+
+            if (isSelected) {
+                fileChooser.setBackground(Color.LIGHT_GRAY);
+                fileChooser.setEnabled(false);
+                fileChooser.setText("");
                 JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setFileSelectionMode(1);
-                fileChooser.setAcceptAllFileFilterUsed(false);
-                fileChooser.setPreferredSize(new Dimension(700, 700));
-                int rval = fileChooser.showOpenDialog((Component)null);
-                if (rval == 0) {
-                    AnaktisiArxeion.this.EksagogiArxeiou.setText(fileChooser.getSelectedFile().toString());
-                }
-
-            }
-        });
-
-        this.Apotelesma.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                AnaktisiArxeion.onomaEpilogiArxeiou = AnaktisiArxeion.this.EpilogiArxeiou.getText().toString().replace("\\", "/");
-                AnaktisiArxeion.onomatouarxeiouString = AnaktisiArxeion.this.OnomasiaArxeiou.getText().toString();
-                AnaktisiArxeion.onomaproorismou = AnaktisiArxeion.this.EksagogiArxeiou.getText().toString().replace("\\", "/");
-
-                try {
-                    AnaktisiArxeion.this.exportToExcel(AnaktisiArxeion.onomaproorismou, AnaktisiArxeion.onomatouarxeiouString, AnaktisiArxeion.onomaEpilogiArxeiou);
-                    int apotelesma = AnaktisiArxeion.this.exportToExcel(AnaktisiArxeion.onomaproorismou, AnaktisiArxeion.onomatouarxeiouString, AnaktisiArxeion.onomaEpilogiArxeiou);
-                    if (apotelesma == 1) {
-                        JOptionPane.showMessageDialog((Component)null, "The extraction is complete ");
-                        AnaktisiArxeion.this.EpilogiArxeiou.setText("");
-                        AnaktisiArxeion.this.EksagogiArxeiou.setText("");
-                        AnaktisiArxeion.this.OnomasiaArxeiou.setText("");
-                    } else {
-                        JOptionPane.showMessageDialog((Component)null, "The extraction failed ");
+                fileChooser.setMultiSelectionEnabled(true);  // Enable multi-selection
+                int returnValue = fileChooser.showOpenDialog(AnaktisiArxeion.this);
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    selectedFiles = fileChooser.getSelectedFiles();  // Get the selected files
+                    for (File file : selectedFiles) {
+                        fileNames.append(file.getAbsolutePath()).append("; ");
                     }
-                } catch (IOException var3) {
-                    var3.printStackTrace();
-                } catch (Throwable e) {
-                    throw new RuntimeException(e);
                 }
-
+                AnaktisiArxeion.this.EpilogiArxeiou.setText(fileNames.toString());
+                AnaktisiArxeion.this.OnomasiaArxeiou.setBackground(Color.DARK_GRAY);
+                AnaktisiArxeion.this.OnomasiaArxeiou.setEditable(false);
+            } else {
+                OnomasiaArxeiou.setBackground(Color.WHITE);
+                OnomasiaArxeiou.setEditable(true);
+                OnomasiaArxeiou.setText("Give name to file");
             }
         });
+
+        this.fileExpBackUport.addActionListener(arg0 -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(1);
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.setPreferredSize(new Dimension(700, 700));
+            int rval = fileChooser.showOpenDialog((Component)null);
+            if (rval == 0) {
+                AnaktisiArxeion.this.EksagogiArxeiou.setText(fileChooser.getSelectedFile().toString());
+            }
+
+        });
+
+        this.Apotelesma.addActionListener(arg0 -> {
+            try {
+                // Retrieve input values and sanitize paths
+                AnaktisiArxeion.onomaEpilogiArxeiou = AnaktisiArxeion.this.EpilogiArxeiou.getText().replace("\\", "/");
+                AnaktisiArxeion.onomatouarxeiouString = AnaktisiArxeion.this.OnomasiaArxeiou.getText();
+                AnaktisiArxeion.onomaproorismou = AnaktisiArxeion.this.EksagogiArxeiou.getText().replace("\\", "/");
+
+                if (isSelected) {
+                    // Handle multiple files
+                    if (selectedFiles.length >= 1) {
+                        for (File datFile : selectedFiles) {
+                            String fileName = datFile.getName().replace(".DAT", "");
+                            int result = AnaktisiArxeion.this.exportToExcel(
+                                    AnaktisiArxeion.onomaproorismou,
+                                    fileName,
+                                    datFile.getAbsolutePath()
+                            );
+                            if (result == 1) {
+                                System.out.println("Exported: " + datFile.getName());
+                            } else {
+                                System.err.println("Failed to export: " + datFile.getName());
+                            }
+                        }
+                        JOptionPane.showMessageDialog(null, "Extraction completed for all .DAT files.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "No files selected. Please select .DAT files to process.");
+                    }
+                } else {
+                    // Handle single file
+                    int result = AnaktisiArxeion.this.exportToExcel(
+                            AnaktisiArxeion.onomaproorismou,
+                            AnaktisiArxeion.onomatouarxeiouString,
+                            AnaktisiArxeion.onomaEpilogiArxeiou
+                    );
+
+                    if (result == 1) {
+                        JOptionPane.showMessageDialog(null, "The extraction is complete.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "The extraction failed.");
+                    }
+                }
+
+                // Reset fields after processing
+                AnaktisiArxeion.this.EpilogiArxeiou.setText("");
+                AnaktisiArxeion.this.EksagogiArxeiou.setText("");
+                AnaktisiArxeion.this.OnomasiaArxeiou.setText("");
+            } catch (IOException var3) {
+                var3.printStackTrace();
+                JOptionPane.showMessageDialog(null, "An error occurred: " + var3.getMessage());
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         this.EpilogiArxeiou.setDropTarget(new DropTarget() {
             public synchronized void drop(DropTargetDropEvent evt) {
                 try {
                     evt.acceptDrop(1);
                     AnaktisiArxeion.this.droppedFiles = (List)evt.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
                     AnaktisiArxeion.this.listaArxeion.add(((File)AnaktisiArxeion.this.droppedFiles.get(0)).toString());
-                    Iterator var3 = AnaktisiArxeion.this.droppedFiles.iterator();
 
-                    while(var3.hasNext()) {
-                        File file = (File)var3.next();
+                    for (File file : AnaktisiArxeion.this.droppedFiles) {
                         if (AnaktisiArxeion.this.deleteText) {
                             AnaktisiArxeion.this.EpilogiArxeiou.setText("");
                             AnaktisiArxeion.this.EpilogiArxeiou.setText(file.toString() + "\n");
@@ -114,114 +163,77 @@ public class AnaktisiArxeion extends DiskGUI {
 
             }
         });
-        this.back.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                new MainGUI();
-                AnaktisiArxeion.this.dispose();
+
+        this.OnomasiaArxeiou.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                OnomasiaArxeiou.setText("");
             }
+        });
+
+        this.back.addActionListener(arg0 -> {
+            new MainGUI();
+            AnaktisiArxeion.this.dispose();
         });
     }
 
     public int exportToExcel(String destination, String name, String epilogiarxeiou) throws Throwable {
         int counter = 0;
-        FileInputStream file = null;
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(epilogiarxeiou)));
+        ArrayList<String> stili1 = new ArrayList<>();
+        ArrayList<String> stili2 = new ArrayList<>();
 
-        try {
-            file = new FileInputStream(epilogiarxeiou);
-        } catch (FileNotFoundException var32) {
-            var32.printStackTrace();
-        }
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(file));
-        ArrayList<String> stili1 = new ArrayList();
-        ArrayList<String> stili2 = new ArrayList();
-
-        while((line = br.readLine()) != null) {
+        while ((line = br.readLine()) != null) {
             if (line.contains("PACKID:")) {
                 column = line.split("\\s+");
-                stili1.add(column[1]);
-                stili2.add(column[4]);
-                ++counter;
+                stili1.add(column[1]); // First column data
+                stili2.add(column[4]); // Second column data
+                counter++;
             }
         }
 
         String[][] Pinakas = new String[counter][2];
-
-        for(int i = 0; i < Pinakas.length; ++i) {
-            int pinakasStili = 0;
-            Pinakas[i][pinakasStili] = stili1.get(i);
-            String[] var10000 = Pinakas[i];
-            ++pinakasStili;
-            var10000[pinakasStili] = stili2.get(i);
+        for (int i = 0; i < Pinakas.length; i++) {
+            Pinakas[i][0] = stili1.get(i);
+            Pinakas[i][1] = stili2.get(i);
         }
 
         HSSFWorkbook workbook = new HSSFWorkbook();
         HSSFSheet sheet = workbook.createSheet("FileSize");
-        CellStyle style = workbook.createCellStyle();
 
         int rowCount = 0;
-        String[][] var17 = Pinakas;
-        int var16 = Pinakas.length;
 
-        HSSFRow row;
-        for(int var15 = 0; var15 < var16; ++var15) {
-            String[] rowStrings = var17[var15];
-            row = sheet.createRow(rowCount);
+        for (String[] rowStrings : Pinakas) {
+            HSSFRow row = sheet.createRow(rowCount);
             int columnCount = 0;
-            String[] var23 = rowStrings;
-            int var22 = rowStrings.length;
 
-            for(int var21 = 0; var21 < var22; ++var21) {
-                String columnString = var23[var21];
+            for (String columnString : rowStrings) {
                 Cell cell = row.createCell(columnCount);
+
+                // Check for numeric data
                 if (columnString.matches("-?\\d+")) {
                     int number = Integer.parseInt(columnString);
-                    style.setDataFormat(HSSFDataFormat.getBuiltinFormat("#,##0.00"));
-                    sheet.autoSizeColumn(columnString.length());
-                    cell.setCellType(0);
-                    cell.setCellValue((double)number);
-                    cell.setCellStyle(style);
+                    cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+                    cell.setCellValue(number);
                 } else {
-                    sheet.autoSizeColumn(columnString.length());
                     cell.setCellValue(columnString);
                 }
 
-                ++columnCount;
+                // Auto-size the column to prevent ####
+                sheet.autoSizeColumn(columnCount);
+
+                columnCount++;
             }
 
-            ++rowCount;
+            rowCount++;
         }
 
-        Row rowFinal = sheet.createRow(rowCount + 2);
-        Cell cell = rowFinal.createCell(1);
-        String formula = "SUM(B1:B" + rowCount + ")";
-        cell.setCellType(2);
-        cell.setCellFormula(formula);
-        Throwable var40 = null;
-//        row = null;
-
-        try {
-            FileOutputStream outputStream = new FileOutputStream(destination + "/" + name + ".xls");
-
-            try {
-                workbook.write(outputStream);
-            } finally {
-                if (outputStream != null) {
-                    outputStream.close();
-                }
-
-            }
-        } catch (Throwable var34) {
-            if (var40 == null) {
-                var40 = var34;
-            } else if (var40 != var34) {
-                var40.addSuppressed(var34);
-            }
-
-            throw var40;
+        // Write to file
+        try (FileOutputStream outputStream = new FileOutputStream(destination + "/" + name + ".xls")) {
+            workbook.write(outputStream);
         }
 
-        br.close();
-        return 1;
+        return 1; // Success
     }
+
 }

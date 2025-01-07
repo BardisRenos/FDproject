@@ -174,7 +174,7 @@ public class CompareFiles {
         HSSFSheet sheet = workbook.createSheet();
         CellStyle style = workbook.createCellStyle();
         HSSFFont font = workbook.createFont();
-        font.getBoldweight();
+//        font.getBoldweight();
         style.setFont(font);
         int firstrow = 0;
         Row row1 = sheet.createRow(firstrow);
@@ -261,7 +261,7 @@ public class CompareFiles {
         HSSFSheet sheet = workbook.createSheet();
         CellStyle style = workbook.createCellStyle();
         HSSFFont font = workbook.createFont();
-        font.getBoldweight();
+//        font.getBoldweight();
         style.setFont(font);
         int firstrow = 0;
         Row row1 = sheet.createRow(firstrow);

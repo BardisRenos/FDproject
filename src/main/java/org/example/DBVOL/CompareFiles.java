@@ -10,7 +10,9 @@ import org.apache.poi.ss.usermodel.Row;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CompareFiles {
     public CompareFiles() {
@@ -216,7 +218,7 @@ public class CompareFiles {
         Object var39 = null;
 
         try {
-            FileOutputStream outputStream = new FileOutputStream(destination + "\\" + filenameExport + "All.xls");
+            FileOutputStream outputStream = new FileOutputStream(destination + "/" + filenameExport + "All.xls");
 
             try {
                 workbook.write(outputStream);
@@ -236,6 +238,53 @@ public class CompareFiles {
 
             throw var38;
         }
+    }
+
+    // Final report: one row per table name, one column of Available Pages per file (headed by its date)
+    public void FullExtract(Map<String, List<Object>> dataPerFile, String destination, String filenameExport) throws IOException {
+        Map<String, Double[]> tables = new LinkedHashMap<>();
+        HSSFWorkbook workbook = new HSSFWorkbook();
+        HSSFSheet sheet = workbook.createSheet();
+        Row header = sheet.createRow(0);
+        header.createCell(0).setCellValue("TableName");
+
+        int fileCount = dataPerFile.size();
+        int f = 0;
+        for (Map.Entry<String, List<Object>> file : dataPerFile.entrySet()) {
+            header.createCell(f + 1).setCellValue(dateOfFile(file.getKey()));
+            List<Object> values = file.getValue();
+            for (int i = 0; i < values.size(); i += 5) {
+                Double availablePages = ((Number) values.get(i + 3)).doubleValue();
+                tables.computeIfAbsent(values.get(i).toString(), k -> new Double[fileCount])[f] = availablePages;
+            }
+            f++;
+        }
+
+        int rowCount = 1;
+        for (Map.Entry<String, Double[]> table : tables.entrySet()) {
+            Row row = sheet.createRow(rowCount++);
+            row.createCell(0).setCellValue(table.getKey());
+            for (int c = 0; c < fileCount; c++) {
+                Double availablePages = table.getValue()[c];
+                if (availablePages != null) { // Empty when the table is not in this file
+                    row.createCell(c + 1).setCellValue(availablePages);
+                }
+            }
+        }
+
+        for (int c = 0; c <= fileCount; c++) {
+            sheet.autoSizeColumn(c);
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream(destination + "/" + filenameExport + ".xls")) {
+            workbook.write(outputStream);
+        }
+    }
+
+    // DBVOL-FILE_PROD_XXXXX.TXT -> XXXXX
+    private String dateOfFile(String fileName) {
+        String name = fileName.replaceAll("\\.[^.]+$", "");
+        return name.substring(name.lastIndexOf('_') + 1);
     }
 
     public void AllExtractThreshold(List<Object> pinakasAllon, String destination, String filenameExport) throws FileNotFoundException, IOException {
@@ -304,7 +353,7 @@ public class CompareFiles {
             Object var42 = null;
 
             try {
-                FileOutputStream outputStream1 = new FileOutputStream(destination + "\\" + filenameExport + ".xls");
+                FileOutputStream outputStream1 = new FileOutputStream(destination + "/" + filenameExport + ".xls");
 
                 try {
                     workbook.write(outputStream1);

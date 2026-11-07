@@ -12,7 +12,6 @@ public class GUI extends JFrame {
     JLabel OnomaNeouArxeiou;
     JLabel Copyright;
     JLabel image;
-    JTextField OnomasiaArxeiou;
     JTextField OnomaDr;
     JTextField OnomaPRD;
     JTextField OnomaEksagogis;

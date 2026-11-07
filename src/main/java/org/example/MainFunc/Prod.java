@@ -2,13 +2,11 @@ package org.example.MainFunc;
 
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Color;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
@@ -311,12 +309,12 @@ public class Prod extends JFrame {
                         HSSFFont font2 = workbook.createFont();
                         font2.setColor(IndexedColors.RED.getIndex());
                         style2.setFont(font2);
-                        cell1.setCellType(0);
+                        cell1.setCellType(CellType.forInt(0));
                         cell1.setCellValue((double)number);
                         cell1.setCellStyle(style2);
                     } else if (columnString.matches("-?\\d+")) {
                         number = Integer.parseInt(columnString);
-                        cell1.setCellType(0);
+                        cell1.setCellType(CellType.forInt(0));
                         cell1.setCellValue((double)number);
                     } else {
                         cell1.setCellValue(columnString);

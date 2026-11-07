@@ -239,8 +239,8 @@ public class FormGUI extends GUI {
                     for (String drItem : drList) {
 //                        index++;
                         for (String prdItem : prdList) {
-                            if (drItem.split("-")[1].substring(0, 6).equals(prdItem.split("-")[1].substring(0, 6))) {
-                                FormGUI.onomatouarxeiouString = drItem.split("-")[1].substring(0, 6);
+                            if (dateOfFile(drItem).equals(dateOfFile(prdItem))) {
+                                FormGUI.onomatouarxeiouString = dateOfFile(drItem);
                                 try {
                                     isFolderEmpty = FormGUI.this.savetofile(drItem, prdItem, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
                                 } catch (IOException ex) {
@@ -1169,6 +1169,11 @@ public class FormGUI extends GUI {
                 return isEmpty(Path.of(destination));
             }
         }
+    }
+
+    // MFD_DR-250101204221.TXT -> 250101. Only the file name is used, the folders may have dashes
+    private String dateOfFile(String filePath) {
+        return new File(filePath.trim()).getName().split("-")[1].substring(0, 6);
     }
 
     // Puts a copy of each compared file in its own zip, in the same folder as the .xls files

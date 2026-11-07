@@ -440,7 +440,7 @@ public class AnaktisiArxeion extends DiskGUI {
             // Create headers for all columns
             for (int i = 0; i < columnNames.size(); i++) {
                 Cell headerCell = headerRow.createCell(i + 1); // Second column onwards
-                String result = columnNames.get(i).split("\\\\")[5].split("\\.")[0];
+                String result = new File(columnNames.get(i)).getName().split("\\.")[0];
                 headerCell.setCellValue(result); // Set header from columnHeaders list
             }
 

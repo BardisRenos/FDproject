@@ -131,7 +131,7 @@ public class DBVOL extends JFrame {
                     }
                 } else {
                     Double limit = Double.valueOf(DBVOL.this.PercentageText.getText());
-                    List<Object> arxeioThreshold = dokimiArxeion.ExtractReportThresold(onomaArxeiou, limit);
+                    List<Object> arxeioThreshold = dokimiArxeion.ExtractReportThresold(DBVOL.this.ImportFile.getText(), limit);
 
                     try {
                         dokimiArxeion.AllExtractThreshold(arxeioThreshold, DBVOL.this.destinationToExtract.getText(), onomaArxeiou);

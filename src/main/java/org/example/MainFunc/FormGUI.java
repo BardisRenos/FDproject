@@ -151,6 +151,9 @@ public class FormGUI extends GUI {
                 FormGUI.this.OnomaArxieou.setBackground(Color.DARK_GRAY);
                 FormGUI.this.OnomaArxieou.setEnabled(false);
 
+                // A new selection replaces the previous one
+                fileNames.setLength(0);
+
                 // You can add a file chooser or logic for selecting multiple files when the checkbox is selected
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setMultiSelectionEnabled(true);  // Enable multi-selection
@@ -217,6 +220,8 @@ public class FormGUI extends GUI {
                         }
                     } catch (Throwable var2) {
                         var2.printStackTrace();
+                        new File(FormGUI.onomaproorismou + "/" + "Compare_Files-" + FormGUI.onomatouarxeiouString).delete(); // Only when empty
+                        JOptionPane.showMessageDialog(null, "The comparison failed: " + var2.getMessage());
                     }
                 });
             }
@@ -234,36 +239,59 @@ public class FormGUI extends GUI {
                             prdList.add(item); // Add to PRD list
                         }
                     }
-                    boolean isFolderEmpty;
-//                    int index = 0;
+                    List<String> compared = new ArrayList<>();
+                    List<String> noDifferences = new ArrayList<>();
+                    List<String> folderExists = new ArrayList<>();
+                    List<String> failed = new ArrayList<>();
+                    Set<String> paired = new HashSet<>();
+
                     for (String drItem : drList) {
-//                        index++;
+                        String date = dateOfFile(drItem);
                         for (String prdItem : prdList) {
-                            if (dateOfFile(drItem).equals(dateOfFile(prdItem))) {
-                                FormGUI.onomatouarxeiouString = dateOfFile(drItem);
-                                try {
-                                    isFolderEmpty = FormGUI.this.savetofile(drItem, prdItem, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
-                                } catch (IOException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                                if (isFolderEmpty) {
-                                    JOptionPane.showMessageDialog(null, "There is no different no need to create files");
+                            if (date == null || !date.equals(dateOfFile(prdItem))) {
+                                continue;
+                            }
+                            paired.add(drItem);
+                            paired.add(prdItem);
+
+                            // The previous results of this date are not overwritten
+                            File folder = new File(FormGUI.onomaproorismou + "/" + "Compare_Files-" + date);
+                            if (folder.exists()) {
+                                folderExists.add(date);
+                                continue;
+                            }
+
+                            FormGUI.onomatouarxeiouString = date;
+                            try {
+                                if (FormGUI.this.savetofile(drItem, prdItem, date, FormGUI.onomaproorismou)) {
+                                    noDifferences.add(date);
                                 } else {
-                                    try {
-                                        FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                                        FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                                        FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
-                                        FormGUI.this.zipSourceFiles(drItem, prdItem, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
-                                    } catch (Throwable ex) {
-                                        throw new RuntimeException(ex);
-                                    }
-                                    FormGUI.this.OnomaEksagogis.setText("");
-                                    FormGUI.this.OnomaArxieou.setText("");
+                                    FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, date);
+                                    FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, date);
+                                    FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, date);
+                                    FormGUI.this.zipSourceFiles(drItem, prdItem, date, FormGUI.onomaproorismou);
+                                    compared.add(date);
                                 }
+                            } catch (Throwable ex) {
+                                ex.printStackTrace();
+                                failed.add(date + " (" + ex.getMessage() + ")");
+                                folder.delete(); // Only when empty, so that the date can be compared again
                             }
                         }
                     }
-                    JOptionPane.showMessageDialog(null, "The comparison finished successfully");
+
+                    List<String> notPaired = new ArrayList<>();
+                    for (String item : items) {
+                        if (!item.trim().isEmpty() && !paired.contains(item)) {
+                            notPaired.add(new File(item.trim()).getName());
+                        }
+                    }
+
+                    if (!compared.isEmpty()) {
+                        FormGUI.this.OnomaEksagogis.setText("");
+                        FormGUI.this.OnomaArxieou.setText("");
+                    }
+                    JOptionPane.showMessageDialog(null, comparisonReport(compared, noDifferences, folderExists, failed, notPaired));
                 });
             }
             threadButton.start();
@@ -1171,9 +1199,33 @@ public class FormGUI extends GUI {
         }
     }
 
-    // MFD_DR-250101204221.TXT -> 250101. Only the file name is used, the folders may have dashes
+    // MFD_DR-250101204221.TXT -> 250101, or null without a date. Only the file name is used, the folders may have dashes
     private String dateOfFile(String filePath) {
-        return new File(filePath.trim()).getName().split("-")[1].substring(0, 6);
+        String[] parts = new File(filePath.trim()).getName().split("-");
+        return parts.length > 1 && parts[1].length() >= 6 ? parts[1].substring(0, 6) : null;
+    }
+
+    private String comparisonReport(List<String> compared, List<String> noDifferences, List<String> folderExists, List<String> failed, List<String> notPaired) {
+        StringBuilder report = new StringBuilder();
+        if (compared.isEmpty() && noDifferences.isEmpty() && folderExists.isEmpty() && failed.isEmpty()) {
+            report.append("Nothing was compared: no DR and PRD files with the same date.");
+        } else if (folderExists.isEmpty() && failed.isEmpty() && notPaired.isEmpty()) {
+            report.append("The comparison finished successfully");
+        } else {
+            report.append("The comparison finished with problems");
+        }
+        addToReport(report, "Compared", compared);
+        addToReport(report, "No differences, no files created", noDifferences);
+        addToReport(report, "Not compared, the folder already exists", folderExists);
+        addToReport(report, "Failed", failed);
+        addToReport(report, "Not compared, no file to compare with", notPaired);
+        return report.toString();
+    }
+
+    private void addToReport(StringBuilder report, String title, List<String> values) {
+        if (!values.isEmpty()) {
+            report.append("\n").append(title).append(": ").append(String.join(", ", values));
+        }
     }
 
     // Puts a copy of each compared file in its own zip, in the same folder as the .xls files

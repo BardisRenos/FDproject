@@ -112,13 +112,17 @@ public class DBVOL extends JFrame {
                 System.out.println(DBVOL.this.destinationToExtract.getText());
                 CompareFiles dokimiArxeion = new CompareFiles();
                 List<Object> arxeio = dokimiArxeion.ExtractReportAll(DBVOL.this.ImportFile.getText());
+                if (arxeio.isEmpty()) {
+                    JOptionPane.showMessageDialog((Component)null, "No DBVOL data was found in the file." + DBVOL.this.problemsText(dokimiArxeion));
+                    return;
+                }
 
                 try {
                     dokimiArxeion.AllExtract(arxeio, DBVOL.this.destinationToExtract.getText(), onomaArxeiou);
-                } catch (IOException var10) {
-                    var10.printStackTrace();
                 } catch (Throwable ex) {
-                    throw new RuntimeException(ex);
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog((Component)null, "The report failed: " + ex.getMessage());
+                    return;
                 }
 
                 if (DBVOL.this.PercentageText.getText().isEmpty()) {
@@ -144,7 +148,9 @@ public class DBVOL extends JFrame {
                 DBVOL.this.ImportFile.setText("");
                 DBVOL.this.destinationToExtract.setText("");
                 DBVOL.this.FileName.setText("");
-                JOptionPane.showMessageDialog((Component)null, "Exported Successfully");
+                JOptionPane.showMessageDialog((Component)null, dokimiArxeion.getProblems().isEmpty()
+                        ? "Exported Successfully"
+                        : "Exported with problems." + DBVOL.this.problemsText(dokimiArxeion));
             }
         });
         this.ImportFile.setDropTarget(new DropTarget() {
@@ -244,7 +250,7 @@ public class DBVOL extends JFrame {
                 allData.put(file.getName(), all);
             }
             if (allData.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "No DBVOL data was found in the selected files.");
+                JOptionPane.showMessageDialog(null, "No DBVOL data was found in the selected files." + problemsText(report));
                 return;
             }
             report.FullExtract(allData, destination, finalName);
@@ -261,11 +267,18 @@ public class DBVOL extends JFrame {
         this.PercentageText.setText("");
         this.destinationToExtract.setText("");
         this.FileName.setText("");
-        String message = "Exported Successfully: " + finalName + ".xls";
+        String message = (report.getProblems().isEmpty() ? "Exported Successfully: " : "Exported with problems: ") + finalName + ".xls";
         if (!noData.isEmpty()) {
             message += "\nNo DBVOL data found, skipped: " + String.join(", ", noData);
         }
-        JOptionPane.showMessageDialog(null, message);
+        JOptionPane.showMessageDialog(null, message + problemsText(report));
+    }
+
+    private String problemsText(CompareFiles report) {
+        if (report.getProblems().isEmpty()) {
+            return "";
+        }
+        return "\nThe data of these files may be incomplete:\n" + String.join("\n", report.getProblems());
     }
 
     private String baseName(File file) {

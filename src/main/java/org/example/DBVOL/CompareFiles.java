@@ -11,11 +11,20 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class CompareFiles {
+    // What went wrong while reading or writing. The data of these files may be incomplete
+    private final Set<String> problems = new LinkedHashSet<>();
+
     public CompareFiles() {
+    }
+
+    public Set<String> getProblems() {
+        return this.problems;
     }
 
     public List<Object> ExtractReportAll(String file) {
@@ -49,6 +58,9 @@ public class CompareFiles {
 
                     while(!lines.contains("Total Number of Pages.........") || !lines.contains("Number of Used Pages..........") || !lines.contains("Number of Available Pages.....") || !lines.contains("Percent of File Full..........")) {
                         lines = bReader.readLine();
+                        if (lines == null) {
+                            throw new EOFException("the file ended inside storagearea " + tableName);
+                        }
                         String[] FileFull;
                         if (lines.contains("Total Number of Pages.........")) {
                             FileFull = lines.split("Total Number of Pages.........");
@@ -81,6 +93,7 @@ public class CompareFiles {
             }
         } catch (Exception var17) {
             var17.printStackTrace();
+            this.problems.add(new File(fileNname.trim()).getName() + ": " + var17.getMessage());
             return lista;
         }
     }
@@ -116,6 +129,9 @@ public class CompareFiles {
 
                     while(!lines.contains("Total Number of Pages.........") || !lines.contains("Number of Used Pages..........") || !lines.contains("Number of Available Pages.....") || !lines.contains("Percent of File Full..........")) {
                         lines = bReader.readLine();
+                        if (lines == null) {
+                            throw new EOFException("the file ended inside storagearea " + tableName);
+                        }
                         String[] FileFull;
                         if (lines.contains("Total Number of Pages.........")) {
                             FileFull = lines.split("Total Number of Pages.........");
@@ -150,6 +166,7 @@ public class CompareFiles {
             }
         } catch (Exception var18) {
             var18.printStackTrace();
+            this.problems.add(new File(fileNname.trim()).getName() + ": " + var18.getMessage());
             return PercentageLista;
         }
     }
@@ -374,6 +391,7 @@ public class CompareFiles {
             }
         } catch (Throwable var36) {
             var36.printStackTrace();
+            this.problems.add(filenameExport + ".xls: " + var36.getMessage());
         }
 
     }

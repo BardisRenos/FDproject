@@ -4,6 +4,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.util.CellReference;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,7 +15,10 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class AnaktisiArxeion extends DiskGUI {
     private static final long serialVersionUID = 1L;
@@ -66,11 +70,7 @@ public class AnaktisiArxeion extends DiskGUI {
                     }
                 }
                 AnaktisiArxeion.this.EpilogiArxeiou.setText(fileNames.toString());
-                AnaktisiArxeion.this.OnomasiaArxeiou.setBackground(Color.DARK_GRAY);
-                AnaktisiArxeion.this.OnomasiaArxeiou.setEditable(false);
             } else {
-                OnomasiaArxeiou.setBackground(Color.WHITE);
-                OnomasiaArxeiou.setEditable(true);
                 OnomasiaArxeiou.setText("Give name to file");
             }
         });
@@ -96,7 +96,12 @@ public class AnaktisiArxeion extends DiskGUI {
 
                 if (isSelected) {
                     // Handle multiple files
-                    if (selectedFiles.length >= 1) {
+                    String givenName = AnaktisiArxeion.onomatouarxeiouString.trim();
+                    if (selectedFiles != null && selectedFiles.length >= 1 && !givenName.isEmpty() && !givenName.equals("Give name to file")) {
+                        // A name was given: one final file with the disks of all the selected files
+                        AnaktisiArxeion.this.exportMergedToExcel(AnaktisiArxeion.onomaproorismou, givenName, selectedFiles);
+                        JOptionPane.showMessageDialog(null, "The extraction is complete: " + givenName + ".xls");
+                    } else if (selectedFiles != null && selectedFiles.length >= 1) {
                         for (File datFile : selectedFiles) {
                             String fileName = datFile.getName().replace(".DAT", "");
                             int result = AnaktisiArxeion.this.exportToExcel(
@@ -228,7 +233,80 @@ public class AnaktisiArxeion extends DiskGUI {
             rowCount++;
         }
 
+        // Summary row: total of the second column, below the last disk
+        if (rowCount > 0) {
+            HSSFRow rowFinal = sheet.createRow(rowCount + 2);
+            Cell cellFinal = rowFinal.createCell(1);
+            cellFinal.setCellFormula("SUM(B1:B" + rowCount + ")");
+        }
+
         // Write to file
+        try (FileOutputStream outputStream = new FileOutputStream(destination + "/" + name + ".xls")) {
+            workbook.write(outputStream);
+        }
+
+        return 1; // Success
+    }
+
+    public int exportMergedToExcel(String destination, String name, File[] files) throws IOException {
+        // Disk -> value per selected file. FDH999 sorts before FDH1000
+        Map<String, String[]> disks = new TreeMap<>(Comparator.comparingInt(String::length).thenComparing(Comparator.naturalOrder()));
+
+        for (int f = 0; f < files.length; f++) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(files[f])))) {
+                String fileLine;
+                while ((fileLine = br.readLine()) != null) {
+                    if (fileLine.contains("PACKID:")) {
+                        String[] parts = fileLine.trim().split("\\s+");
+                        disks.computeIfAbsent(parts[1], k -> new String[files.length])[f] = parts[4];
+                    }
+                }
+            }
+        }
+
+        HSSFWorkbook workbook = new HSSFWorkbook();
+        HSSFSheet sheet = workbook.createSheet("FileSize");
+
+        // One column per selected file, named after it
+        HSSFRow header = sheet.createRow(0);
+        header.createCell(0).setCellValue("PACKID");
+        for (int f = 0; f < files.length; f++) {
+            header.createCell(f + 1).setCellValue(files[f].getName().replaceAll("(?i)\\.(dat|txt)$", ""));
+        }
+
+        int rowCount = 1;
+        for (Map.Entry<String, String[]> disk : disks.entrySet()) {
+            HSSFRow row = sheet.createRow(rowCount);
+            row.createCell(0).setCellValue(disk.getKey());
+            for (int f = 0; f < files.length; f++) {
+                String value = disk.getValue()[f];
+                if (value == null) {
+                    continue; // This disk does not exist in this file
+                }
+                Cell cell = row.createCell(f + 1);
+                if (value.matches("-?\\d+")) {
+                    cell.setCellValue(Long.parseLong(value));
+                } else {
+                    cell.setCellValue(value);
+                }
+            }
+            rowCount++;
+        }
+
+        // Summary row: total of each file, below the last disk
+        if (!disks.isEmpty()) {
+            HSSFRow rowFinal = sheet.createRow(rowCount + 2);
+            rowFinal.createCell(0).setCellValue("TOTAL");
+            for (int f = 0; f < files.length; f++) {
+                String col = CellReference.convertNumToColString(f + 1);
+                rowFinal.createCell(f + 1).setCellFormula("SUM(" + col + "2:" + col + rowCount + ")");
+            }
+        }
+
+        for (int c = 0; c <= files.length; c++) {
+            sheet.autoSizeColumn(c);
+        }
+
         try (FileOutputStream outputStream = new FileOutputStream(destination + "/" + name + ".xls")) {
             workbook.write(outputStream);
         }

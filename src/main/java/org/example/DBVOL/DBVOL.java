@@ -12,8 +12,12 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DBVOL extends JFrame {
     private static final long serialVersionUID = 1L;
@@ -28,6 +32,8 @@ public class DBVOL extends JFrame {
     JTextField FileName;
     JLabel percentage;
     JLabel FileNameLabel;
+    JCheckBox folderCheckbox;
+    private File[] selectedFiles;
     private List<File> droppedFiles;
     private ArrayList<String> listaArxeion = new ArrayList();
     private boolean deleteText = true;
@@ -56,6 +62,9 @@ public class DBVOL extends JFrame {
         this.percentage.setBounds(20, 150, 180, 20);
         this.FileNameLabel = new JLabel("Give a name:");
         this.FileNameLabel.setBounds(20, 200, 120, 20);
+        this.folderCheckbox = new JCheckBox("Folder");
+        this.folderCheckbox.setBounds(190, 50, 80, 20);
+        this.add(this.folderCheckbox);
         this.add(this.FileNameLabel);
         this.add(this.FileName);
         this.add(this.reportbutton);
@@ -74,8 +83,30 @@ public class DBVOL extends JFrame {
             }
         });
 
+        this.folderCheckbox.addActionListener(e -> {
+            if (this.folderCheckbox.isSelected()) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setMultiSelectionEnabled(true);
+                if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION && fileChooser.getSelectedFiles().length > 0) {
+                    this.selectedFiles = fileChooser.getSelectedFiles();
+                    this.ImportFile.setText(this.selectedFiles.length + " files selected");
+                    this.ImportFile.setEditable(false);
+                } else {
+                    this.folderCheckbox.setSelected(false);
+                }
+            } else {
+                this.selectedFiles = null;
+                this.ImportFile.setEditable(true);
+                this.ImportFile.setText("Import file");
+            }
+        });
+
         this.reportbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                if (DBVOL.this.folderCheckbox.isSelected()) {
+                    DBVOL.this.reportForFiles();
+                    return;
+                }
                 String onomaArxeiou = DBVOL.this.FileName.getText();
                 System.out.println(onomaArxeiou);
                 System.out.println(DBVOL.this.destinationToExtract.getText());
@@ -163,6 +194,82 @@ public class DBVOL extends JFrame {
         this.setDefaultCloseOperation(3);
         this.setResizable(false);
         this.setVisible(true);
+    }
+
+    // One pair of .xls per selected file, plus one final file with the Available Pages of every file
+    private void reportForFiles() {
+        String finalName = this.FileName.getText().trim();
+        String destination = this.destinationToExtract.getText().trim();
+        if (finalName.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Please give a name for the final file.");
+            return;
+        }
+        if (!new File(destination).isDirectory()) {
+            JOptionPane.showMessageDialog(null, "Please select a destination folder.");
+            return;
+        }
+
+        double limit = 70.0;
+        String percentageText = this.PercentageText.getText().trim();
+        if (!percentageText.isEmpty()) {
+            try {
+                limit = Double.parseDouble(percentageText);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "The percentage is not a number: " + percentageText);
+                return;
+            }
+        }
+
+        File[] files = this.selectedFiles.clone();
+        Arrays.sort(files, Comparator.comparing(File::getName));
+        for (File file : files) {
+            if (baseName(file).equals(finalName)) {
+                JOptionPane.showMessageDialog(null, "The final file cannot have the same name as a selected file: " + finalName);
+                return;
+            }
+        }
+
+        CompareFiles report = new CompareFiles();
+        Map<String, List<Object>> allData = new LinkedHashMap<>();
+        List<String> noData = new ArrayList<>();
+        try {
+            for (File file : files) {
+                List<Object> all = report.ExtractReportAll(file.getPath());
+                if (all.isEmpty()) {
+                    noData.add(file.getName());
+                    continue;
+                }
+                report.AllExtract(all, destination, baseName(file));
+                report.AllExtractThreshold(report.ExtractReportThresold(file.getPath(), limit), destination, baseName(file));
+                allData.put(file.getName(), all);
+            }
+            if (allData.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "No DBVOL data was found in the selected files.");
+                return;
+            }
+            report.FullExtract(allData, destination, finalName);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "The report failed: " + e.getMessage());
+            return;
+        }
+
+        this.folderCheckbox.setSelected(false);
+        this.selectedFiles = null;
+        this.ImportFile.setEditable(true);
+        this.ImportFile.setText("Import file");
+        this.PercentageText.setText("");
+        this.destinationToExtract.setText("");
+        this.FileName.setText("");
+        String message = "Exported Successfully: " + finalName + ".xls";
+        if (!noData.isEmpty()) {
+            message += "\nNo DBVOL data found, skipped: " + String.join(", ", noData);
+        }
+        JOptionPane.showMessageDialog(null, message);
+    }
+
+    private String baseName(File file) {
+        return file.getName().replaceAll("\\.[^.]+$", "");
     }
 
     public static void main(String[] args) {

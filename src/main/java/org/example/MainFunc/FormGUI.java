@@ -21,6 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class FormGUI extends GUI {
     public static String folder = null;
@@ -197,6 +199,7 @@ public class FormGUI extends GUI {
                                 FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
                                 FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
                                 FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString);
+                                FormGUI.this.zipSourceFiles(FormGUI.onomaArxikouDR, FormGUI.onomaArxikouPRD, FormGUI.onomatouarxeiouString, FormGUI.onomaproorismou);
                                 JOptionPane.showMessageDialog(null, "The comparison finished successfully");
                                 FormGUI.this.OnomaDr.setText("");
                                 FormGUI.this.OnomaPRD.setText("");
@@ -247,6 +250,7 @@ public class FormGUI extends GUI {
                                         FormGUI.this.exportToExcelDadE(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString + "-" + index);
                                         FormGUI.this.exportToExcelDadT(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString + "-" + index);
                                         FormGUI.this.exportToExcelSize(FormGUI.onomaproorismou, FormGUI.onomatouarxeiouString + "-" + index);
+                                        FormGUI.this.zipSourceFiles(drItem, prdItem, FormGUI.onomatouarxeiouString + "-" + index, FormGUI.onomaproorismou);
                                     } catch (Throwable ex) {
                                         throw new RuntimeException(ex);
                                     }
@@ -1161,6 +1165,38 @@ public class FormGUI extends GUI {
                 }
                 return isEmpty(Path.of(destination));
             }
+        }
+    }
+
+    // Puts a copy of each compared file in its own zip, in the same folder as the .xls files
+    void zipSourceFiles(String onomaDR, String onomaPRD, String name, String destination) {
+        Path folder = Paths.get(destination.trim(), "Compare_Files-" + name);
+        Path drFile = Paths.get(onomaDR.trim());
+        Path prdFile = Paths.get(onomaPRD.trim());
+        String drZip = withoutExtension(drFile);
+        String prdZip = withoutExtension(prdFile);
+        if (drZip.equals(prdZip)) {
+            // Same name in different folders: the second zip must not overwrite the first
+            drZip = "DR_" + drZip;
+            prdZip = "PRD_" + prdZip;
+        }
+        zipFile(drFile, folder.resolve(drZip + ".zip"));
+        zipFile(prdFile, folder.resolve(prdZip + ".zip"));
+    }
+
+    private String withoutExtension(Path file) {
+        return file.getFileName().toString().replaceAll("\\.[^.]+$", "");
+    }
+
+    private void zipFile(Path source, Path zipFile) {
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(zipFile))) {
+            zip.putNextEntry(new ZipEntry(source.getFileName().toString()));
+            Files.copy(source, zip);
+            zip.closeEntry();
+        } catch (IOException e) {
+            e.printStackTrace();
+            zipFile.toFile().delete(); // Do not leave a broken zip behind
+            JOptionPane.showMessageDialog(null, "The zip of " + source.getFileName() + " failed: " + e.getMessage());
         }
     }
 
